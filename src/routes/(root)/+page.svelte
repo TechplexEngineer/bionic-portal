@@ -77,22 +77,18 @@
 			{/each}
 		</div>
 	</div>
-	<iframe
-		id="calendar-iframe"
-		title="Team 4909 Calendar"
-		src="https://calendar.google.com/calendar/embed?src=team4909%40gmail.com&ctz=America%2FNew_York"
-		style="border: 0"
-		width="100%"
-		frameborder="0"
-		scrolling="no"
-	></iframe>
+	<div class="row">
+		<div class="col">
+			<iframe
+				id="calendar-iframe"
+				title="Team 4909 Calendar"
+				src="https://calendar.google.com/calendar/embed?src=team4909%40gmail.com&ctz=America%2FNew_York"
+				frameborder="0"
+				scrolling="no"
+			></iframe>
+		</div>
+	</div>
 </div>
-
-<style>
-	#calendar-iframe {
-		aspect-ratio: 16 / 9;
-	}
-</style>
 
 {#snippet card(eventName: string, actions: string[])}
 	<div class="card h-100">
@@ -124,3 +120,11 @@
 		</div>
 	</div>
 {/snippet}
+
+<style>
+	#calendar-iframe {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		border: 0;
+	}
+</style>
