@@ -77,7 +77,7 @@
 						/>
 					</button>
 
-					<ul class="dropdown-menu text-small">
+					<ul class="dropdown-menu dropdown-menu-end text-small">
 						<li>
 							<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
 						</li>
