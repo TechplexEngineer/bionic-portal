@@ -30,14 +30,12 @@ export const actions: Actions = {
 		const a = await locals.db.insert(students).values({
 			userid: email,
 			firstName: firstname,
-			lastName: lastname,
-			data: JSON.stringify({})
+			lastName: lastname
 		});
 
 		// add user to checked in list for today
 		const b = await locals.db.insert(attendance).values({
 			userid: email,
-			date: "JUNK",
 			timestamp: new Date()
 		});
 

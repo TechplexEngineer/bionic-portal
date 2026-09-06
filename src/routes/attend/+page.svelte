@@ -336,16 +336,16 @@
 
 	const uf = new uFuzzy();
 
-	let filteredLocations = $derived.by(() => {
+	type Location = (typeof locations)[number];
+
+	let filteredLocations = $derived.by((): Location[] => {
 		if (shopSearch.trim() === "") {
 			return locations;
 		}
 		const haystack = locations.map((l) => l.item);
-		const result = uf.search(haystack, shopSearch);
+		const idxs = uf.search(haystack, shopSearch)[0] ?? [];
 
-		return result[0]?.map((idx) => {
-			return locations[idx];
-		});
+		return idxs?.map((idx) => locations[idx]) ?? [];
 
 		console.log("Shop search for:", shopSearch);
 		console.log("Matched indexes:", idxs);

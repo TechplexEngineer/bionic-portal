@@ -13,7 +13,7 @@ describe("admin event deletion", () => {
 		expect(deleteForm).toContain("cancel();");
 		expect(deleteForm).not.toContain("onsubmit=");
 		expect(deleteForm?.indexOf("cancel();")).toBeLessThan(
-			deleteForm?.indexOf("deletingId = event.id")
+			deleteForm!.indexOf("deletingId = event.id")
 		);
 	});
 });

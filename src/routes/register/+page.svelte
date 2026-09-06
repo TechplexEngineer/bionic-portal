@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import type { ActionData, PageProps } from "./$types";
+	import type { PageProps } from "./$types";
 
-	let { data, form }: PageProps<ActionData> = $props();
+	let { data, form }: PageProps = $props();
 
 	let firstName = $state(data.student?.firstName ?? "");
 	let lastName = $state(data.student?.lastName ?? "");

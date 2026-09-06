@@ -13,7 +13,7 @@
 				renderSnippet?: Snippet<[value, Record<string, any>]>;
 		  }
 	)[];
-	export type renderFn = (val: any, row: any) => string;
+	export type renderFn = (val: any, type: any, row: any) => string;
 </script>
 
 <script lang="ts">
@@ -74,9 +74,9 @@
 				{#each cols2Render as colCfg}
 					<td style="border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;">
 						{#if colCfg.render}
-							{colCfg.render(row[colCfg.data], row)}
+							{colCfg.render(row[colCfg.data], null, row)}
 						{:else if colCfg.renderHTML}
-							{@html colCfg.renderHTML(row[colCfg.data], row)}
+							{@html colCfg.renderHTML(row[colCfg.data], null, row)}
 						{:else if colCfg.renderSnippet}
 							{@render colCfg.renderSnippet(row[colCfg.data], row)}
 						{:else}
