@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import { resolve } from "$app/paths";
 	import TableForObjectArray, {
 		type TableColumns
@@ -32,7 +33,7 @@
 
 {#snippet action(id: string, student: Record<string, number | string | boolean | null>)}
 	<a href={resolve(`/admin/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
-	<form method="POST" action="?/toggleHidden" style="display:inline;">
+	<form method="POST" action="?/toggleHidden" use:enhance style="display:inline;">
 		<input type="hidden" name="id" value={id} />
 		<button type="submit" class="btn btn-outline-secondary btn-sm me-1">
 			{student.hidden ? "Unhide" : "Hide"}

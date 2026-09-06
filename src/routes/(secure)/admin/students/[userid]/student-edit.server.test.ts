@@ -90,6 +90,16 @@ describe("admin student edit", () => {
 		});
 	});
 
+	it("returns an enhanced-form success response when the student ID is unchanged", async () => {
+		const { input } = event({
+			userid: "student@example.com",
+			firstName: "Ada",
+			lastName: "Lovelace"
+		});
+
+		expect(await actions.default(input)).toEqual({ success: true });
+	});
+
 	it("rejects missing required values without writing", async () => {
 		const { input, db } = event({ userid: "updated@example.com", firstName: "Ada" });
 
