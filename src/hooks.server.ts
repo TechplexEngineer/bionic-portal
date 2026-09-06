@@ -32,9 +32,16 @@ const addDbToLocals: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	let db = getDb(event.platform);
+	const db = getDb(event.platform);
 	event.locals.db = db;
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(addDbToLocals, handleAuth);
+const protectMagicLink: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname === "/login/verify") {
+		event.setHeaders({ "cache-control": "no-store", "referrer-policy": "no-referrer" });
+	}
+	return resolve(event);
+};
+
+export const handle: Handle = sequence(protectMagicLink, addDbToLocals, handleAuth);
