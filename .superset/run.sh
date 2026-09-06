@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SUPERSET_WORKSPACE_NAME="$(superset workspaces get --field name)"
+
+
 HASH="$(printf '%s' "$SUPERSET_WORKSPACE_NAME" | cksum | awk '{print $1}')"
 PORT=$((10000 + HASH % 10000))
 
@@ -36,5 +39,5 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-npm run db:migrate:local
+CI=true npm run db:migrate:local
 wait "$DEV_PID"
