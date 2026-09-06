@@ -16,7 +16,7 @@
 		{ data: "lastName", title: "Last Name" },
 		{ data: "graduationYear", title: "YOG" },
 		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
-		{ data: "userid", title: "Actions", filterable: false, renderSnippet: action }
+		{ data: "userid", title: "Actions", renderSnippet: action }
 	];
 
 	layoutState.pageTitle = "Student Overview";
@@ -70,19 +70,19 @@
 	</form>
 {/snippet}
 
+{#snippet studentToolbar()}
+	{#if data.showArchived}
+		<a href={resolve("/admin/students")} class="btn btn-outline-secondary btn-sm"
+			>Show current students only</a
+		>
+	{:else}
+		<a href={resolve(showArchivedUrl)} class="btn btn-outline-secondary btn-sm"
+			>Show hidden and last year's students</a
+		>
+	{/if}
+{/snippet}
+
 <div class="container">
 	<h1>Student Overview</h1>
-	<div class="mb-3">
-		{#if data.showArchived}
-			<a href={resolve("/admin/students")} class="btn btn-outline-secondary btn-sm"
-				>Show current students only</a
-			>
-		{:else}
-			<a href={resolve(showArchivedUrl)} class="btn btn-outline-secondary btn-sm"
-				>Show hidden and last year's students</a
-			>
-		{/if}
-	</div>
-
-	<TableForObjectArray data={data.students} {columns} />
+	<TableForObjectArray data={data.students} {columns} toolbar={studentToolbar} />
 </div>
