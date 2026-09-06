@@ -24,7 +24,7 @@
 	</p>
 
 	<div class="row g-4 align-items-start">
-		<div class="col-md-9">
+		<div class="col-md-8">
 			<h3>Calendar</h3>
 			<iframe
 				id="calendar-iframe"
@@ -35,7 +35,7 @@
 			></iframe>
 		</div>
 
-		<div class="col-md-3">
+		<div class="col-md-4">
 			<h3>Upcoming Events</h3>
 			{#each data.events as evt}
 				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
