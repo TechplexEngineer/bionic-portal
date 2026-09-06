@@ -111,4 +111,17 @@ describe("TableForObjectArray", () => {
 
 		expect(screen.getAllByRole("combobox")).toHaveLength(2);
 	});
+
+	it("omits columns marked as not filterable", () => {
+		render(TableForObjectArray, {
+			data: [{ name: "Alice", action: "Edit" }],
+			columns: [
+				{ data: "name", title: "Name" },
+				{ data: "action", title: "Actions", filterable: false }
+			]
+		});
+
+		expect(screen.getByLabelText("Filter Name")).toBeVisible();
+		expect(screen.queryByLabelText("Filter Actions")).toBeNull();
+	});
 });

@@ -16,8 +16,7 @@
 		{ data: "lastName", title: "Last Name" },
 		{ data: "graduationYear", title: "YOG" },
 		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
-		{ data: "hidden", title: "Hidden" },
-		{ data: "userid", title: "Actions", renderSnippet: action }
+		{ data: "userid", title: "Actions", filterable: false, renderSnippet: action }
 	];
 
 	layoutState.pageTitle = "Student Overview";
