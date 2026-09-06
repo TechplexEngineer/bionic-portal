@@ -49,7 +49,7 @@
 <style>
 	#calendar-iframe {
 		width: 100%;
-		aspect-ratio: 16 / 9;
+		aspect-ratio: 16 / 10;
 		border: 0;
 	}
 </style>
