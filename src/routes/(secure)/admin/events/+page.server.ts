@@ -1,6 +1,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { getDb } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
+import { sortEventsByStartDate } from "$lib/server/eventSorting";
 import { eq } from "drizzle-orm";
 import { fail } from '@sveltejs/kit';
 
@@ -9,7 +10,7 @@ export const load = (async ({ locals, platform }) => {
     const events = await db.select().from(table.events);
 
     return {
-        events: events.map(e => ({
+        events: sortEventsByStartDate(events, (event) => event.data.startDate).map(e => ({
             id: e.id,
             ...e.data
         }))

@@ -1,5 +1,6 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { students, attendance } from "$lib/server/db/schema";
+import { sortEventsByStartDate } from "$lib/server/eventSorting";
 
 export const load = (async ({ locals }) => {
 
@@ -27,7 +28,7 @@ export const load = (async ({ locals }) => {
     }));
 
     return {
-        events: dbEvents,
+        events: sortEventsByStartDate(dbEvents, (event) => event.dateStr),
         membersNotHere: members.filter((m) => !m.here).sort((a, b) => a.name.localeCompare(b.name)),
         membersHere: members.filter((m) => m.here).sort((a, b) => a.name.localeCompare(b.name))
     };
