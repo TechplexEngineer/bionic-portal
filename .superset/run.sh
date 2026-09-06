@@ -6,6 +6,7 @@ SUPERSET_WORKSPACE_NAME="$(superset workspaces get --field name)"
 
 HASH="$(printf '%s' "$SUPERSET_WORKSPACE_NAME" | cksum | awk '{print $1}')"
 PORT=$((10000 + HASH % 10000))
+WORKSPACE_ID="${SUPERSET_WORKSPACE_ID:?SUPERSET_WORKSPACE_ID must be set}"
 
 port_in_use() {
   if command -v ss >/dev/null 2>&1; then
@@ -22,9 +23,11 @@ while port_in_use "$PORT"; do
   PORT=$((PORT + 1))
 done
 
+APP_URL="http://localhost:$PORT"
+
 cat > .superset/workspace.env <<EOF
 PORT=$PORT
-APP_URL=http://localhost:$PORT
+APP_URL=$APP_URL
 EOF
 
 echo "Workspace: $SUPERSET_WORKSPACE_NAME"
@@ -40,4 +43,21 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 CI=true npm run db:migrate:local
+echo "Waiting for the dev server to become available..."
+until curl --silent --output /dev/null "$APP_URL"; do
+  if ! kill -0 "$DEV_PID" 2>/dev/null; then
+    echo "The dev server exited before becoming available." >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+echo "Opening application in a new Superset browser tab..."
+if ! superset browser open \
+  --workspace "$WORKSPACE_ID" \
+  --url "$APP_URL" \
+  --target new-tab; then
+  echo "Unable to open the application in the Superset browser." >&2
+fi
+
 wait "$DEV_PID"
