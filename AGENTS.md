@@ -37,6 +37,9 @@
 - Zero context switching required from the user
 - Go fix failing CI tests without being told how
 
+### 7. Completion Workflow
+- When changes are complete and verified, commit them, push the feature branch, merge it into local `main`, and push `main`.
+
 ## Task Management
 
 1. **Plan First**: Write plan to `agents/plans/YYYY-MM-DD_HH-MM-SS_plan.md` with checkable items
