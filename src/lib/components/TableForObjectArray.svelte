@@ -8,6 +8,7 @@
 		| {
 				data: string;
 				title: string;
+				filterable?: boolean;
 				render?: renderFn;
 				renderHTML?: renderFn;
 				renderSnippet?: Snippet<[value, Record<string, any>]>;
@@ -53,14 +54,16 @@
 	);
 
 	const filterOptions = $derived(
-		cols2Render.map((column) => ({
-			...column,
-			values: Array.from(
-				new Set(
-					data.map((row) => String(row[column.data] ?? "")).filter((value) => value.length > 0)
-				)
-			).sort((a, b) => a.localeCompare(b))
-		}))
+		cols2Render
+			.filter((column) => column.filterable !== false)
+			.map((column) => ({
+				...column,
+				values: Array.from(
+					new Set(
+						data.map((row) => String(row[column.data] ?? "")).filter((value) => value.length > 0)
+					)
+				).sort((a, b) => a.localeCompare(b))
+			}))
 	);
 
 	const filteredData = $derived(
