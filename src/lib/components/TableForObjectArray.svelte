@@ -1,5 +1,5 @@
 <script module lang="ts">
-	import type { Snippet, SvelteComponent } from "svelte";
+	import type { Snippet } from "svelte";
 
 	type value = any;
 
@@ -8,7 +8,6 @@
 		| {
 				data: string;
 				title: string;
-				filterable?: boolean;
 				render?: renderFn;
 				renderHTML?: renderFn;
 				renderSnippet?: Snippet<[value, Record<string, any>]>;
@@ -25,16 +24,17 @@
 		id?: string;
 		tableName?: string;
 		columns?: TableColumns;
+		toolbar?: Snippet;
 	}
 	const {
 		data,
 		id,
 		tableName,
-		columns = Object.keys(data[0] || { "No Data": "" })
+		columns = Object.keys(data[0] || { "No Data": "" }),
+		toolbar
 	}: Props = $props();
 
 	let searchTerm = $state("");
-	let filters = $state<Record<string, string>>({});
 
 	// export let data: Record<string, string | number>[];
 	// export let id: string = '';
@@ -53,19 +53,6 @@
 		})
 	);
 
-	const filterOptions = $derived(
-		cols2Render
-			.filter((column) => column.filterable !== false)
-			.map((column) => ({
-				...column,
-				values: Array.from(
-					new Set(
-						data.map((row) => String(row[column.data] ?? "")).filter((value) => value.length > 0)
-					)
-				).sort((a, b) => a.localeCompare(b))
-			}))
-	);
-
 	const filteredData = $derived(
 		data.filter((row) => {
 			const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -76,17 +63,9 @@
 						.toLowerCase()
 						.includes(normalizedSearch)
 				);
-			const matchesFilters = cols2Render.every(
-				(column) => !filters[column.data] || String(row[column.data] ?? "") === filters[column.data]
-			);
-			return matchesSearch && matchesFilters;
+			return matchesSearch;
 		})
 	);
-
-	function clearFilters() {
-		searchTerm = "";
-		filters = {};
-	}
 
 	// const exportExcel = () => {
 	// 	const worksheet = XLSX.utils.json_to_sheet(data);
@@ -111,31 +90,10 @@
 			bind:value={searchTerm}
 		/>
 	</div>
-	{#each filterOptions as option, index (index)}
-		{#if option.values.length > 0}
-			<div>
-				<label class="form-label mb-1" for={`${id ?? "table"}-filter-${option.data}-${index}`}
-					>Filter {option.title}</label
-				>
-				<select
-					id={`${id ?? "table"}-filter-${option.data}-${index}`}
-					class="form-select"
-					aria-label={`Filter ${option.title}`}
-					value={filters[option.data] ?? ""}
-					onchange={(event) => {
-						filters[option.data] = event.currentTarget.value;
-					}}
-				>
-					<option value="">All {option.title}</option>
-					{#each option.values as value (value)}
-						<option {value}>{value}</option>
-					{/each}
-				</select>
-			</div>
-		{/if}
-	{/each}
-	{#if searchTerm || Object.values(filters).some(Boolean)}
-		<button type="button" class="btn btn-outline-secondary" onclick={clearFilters}>Clear</button>
+	{#if toolbar}
+		<div class="ms-auto">
+			{@render toolbar()}
+		</div>
 	{/if}
 </div>
 <p class="text-muted small mb-2 d-print-none">

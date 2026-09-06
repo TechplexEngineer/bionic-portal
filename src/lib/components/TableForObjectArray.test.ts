@@ -87,17 +87,16 @@ describe("TableForObjectArray", () => {
 		expect(within(screen.getByRole("table")).queryByText("Alice")).toBeNull();
 	});
 
-	it("filters rows by a column value", async () => {
+	it("renders only the search control", () => {
 		render(TableForObjectArray, {
 			data: [
 				{ name: "Alice", age: "25" },
 				{ name: "Bob", age: "30" }
 			]
 		});
-		await fireEvent.change(screen.getByLabelText("Filter Age"), { target: { value: "30" } });
 
-		expect(within(screen.getByRole("table")).getByText("Bob")).toBeVisible();
-		expect(within(screen.getByRole("table")).queryByText("Alice")).toBeNull();
+		expect(screen.getByRole("searchbox")).toBeVisible();
+		expect(screen.queryByRole("combobox")).toBeNull();
 	});
 
 	it("supports repeated data fields in separate columns", () => {
@@ -109,19 +108,6 @@ describe("TableForObjectArray", () => {
 			]
 		});
 
-		expect(screen.getAllByRole("combobox")).toHaveLength(2);
-	});
-
-	it("omits columns marked as not filterable", () => {
-		render(TableForObjectArray, {
-			data: [{ name: "Alice", action: "Edit" }],
-			columns: [
-				{ data: "name", title: "Name" },
-				{ data: "action", title: "Actions", filterable: false }
-			]
-		});
-
-		expect(screen.getByLabelText("Filter Name")).toBeVisible();
-		expect(screen.queryByLabelText("Filter Actions")).toBeNull();
+		expect(screen.queryAllByRole("combobox")).toHaveLength(0);
 	});
 });
