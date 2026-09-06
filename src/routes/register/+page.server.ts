@@ -36,22 +36,23 @@ export const actions: Actions = {
 		const lastName = formData.get("lastName") as string;
 		const dietaryRestrictions = formData.get("dietaryRestrictions") as string;
 		const intoleranceLevel = formData.get("intoleranceLevel") as string;
-		
+
 		const parentNamesArr = formData.getAll("parentNames");
 		const parentEmailsArr = formData.getAll("parentEmails");
 		const parentPhonesArr = formData.getAll("parentPhones");
 
-		const validParents = parentNamesArr.map((name, i) => ({
-			name: name.toString().trim(),
-			email: parentEmailsArr[i]?.toString().trim() || "",
-			phone: parentPhonesArr[i]?.toString().trim() || ""
-		})).filter(p => p.name || p.email || p.phone);
+		const validParents = parentNamesArr
+			.map((name, i) => ({
+				name: name.toString().trim(),
+				email: parentEmailsArr[i]?.toString().trim() || "",
+				phone: parentPhonesArr[i]?.toString().trim() || ""
+			}))
+			.filter((p) => p.name || p.email || p.phone);
 
-		const parentNames = validParents.map(p => p.name).join(",");
-		const parentEmails = validParents.map(p => p.email).join(",");
-		const parentPhone = validParents.map(p => p.phone).join(",");
+		const parentNames = validParents.map((p) => p.name).join(",");
+		const parentEmails = validParents.map((p) => p.email).join(",");
+		const parentPhone = validParents.map((p) => p.phone).join(",");
 
-		const phone = formData.get("phone") as string;
 		const graduationYear = formData.get("graduationYear") as string;
 		const tshirtSize = formData.get("tshirtSize") as string;
 		const currentGrade = formData.get("currentGrade") as string;
@@ -111,7 +112,6 @@ export const actions: Actions = {
 					intoleranceLevel,
 					parentNames,
 					parentEmails,
-					phone,
 					parentPhone,
 					graduationYear,
 					tshirtSize,
@@ -128,7 +128,6 @@ export const actions: Actions = {
 						intoleranceLevel,
 						parentNames,
 						parentEmails,
-						phone,
 						parentPhone,
 						graduationYear,
 						tshirtSize,
