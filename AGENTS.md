@@ -5,7 +5,6 @@
 - If something goes sideways, STOP and re-plan immediately – don't keep pushing
 - Use plan mode for verification steps, not just building
 - Write detailed specs upfront to reduce ambiguity
-- write a copy of all plans to `agents/plans/YYYY-MM-DD_HH-MM-SS_plan.md`
 
 ### 2. Subagent Strategy
 - Use subagents liberally to keep main context window clean

@@ -6,3 +6,4 @@
 - **Operational Errors**: User-facing configuration failures must emit a server-side error log without including secrets or personal data.
 - **Patch Validation**: After editing nested Svelte directives, inspect the exact changed block before running tests so malformed or duplicated attributes are caught immediately.
 - **Migration Immutability**: Once a database migration is committed and applied, never edit it; migrations are applied sequentially, so later schema changes require a new migration.
+- **Workflow Autonomy**: Proceed with implementation without waiting for design approval; pause only when scope or authorization would materially change.
