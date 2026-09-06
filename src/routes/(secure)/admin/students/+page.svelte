@@ -13,6 +13,7 @@
 		{ data: "userid", title: "User ID" },
 		{ data: "firstName", title: "First Name" },
 		{ data: "lastName", title: "Last Name" },
+		{ data: "graduationYear", title: "YOG" },
 		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
 		{ data: "hidden", title: "Hidden" },
 		{ data: "userid", title: "Actions", renderSnippet: action }

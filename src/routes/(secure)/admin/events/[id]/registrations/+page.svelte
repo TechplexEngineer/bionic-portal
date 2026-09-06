@@ -6,6 +6,22 @@
 
 	let updating = $state(false);
 	let showManualRegister = $state(false);
+	let registrationSearch = $state("");
+	let registrationFilter = $state("");
+	let filteredRegistrations = $derived(
+		data.registrations.filter((registration) => {
+			const query = registrationSearch.trim().toLowerCase();
+			const name = `${registration.student.firstName} ${registration.student.lastName}`;
+			const status = registration.paid && registration.formCompleted ? "ready" : "missing";
+			return (
+				(!query || `${name} ${registration.student.userid}`.toLowerCase().includes(query)) &&
+				(!registrationFilter || status === registrationFilter)
+			);
+		})
+	);
+	let dietaryRegistrations = $derived(
+		filteredRegistrations.filter((r) => r.student.dietaryRestrictions || r.student.intoleranceLevel)
+	);
 </script>
 
 <svelte:head>
@@ -159,6 +175,26 @@
 				<p class="lead text-muted">No registrations yet for this event.</p>
 			</div>
 		{:else}
+			<div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+				<div class="flex-grow-1">
+					<label class="form-label mb-1" for="registration-search">Search</label>
+					<input
+						id="registration-search"
+						class="form-control"
+						type="search"
+						placeholder="Search students or email..."
+						bind:value={registrationSearch}
+					/>
+				</div>
+				<div>
+					<label class="form-label mb-1" for="registration-filter">Filter Status</label>
+					<select id="registration-filter" class="form-select" bind:value={registrationFilter}>
+						<option value="">All statuses</option>
+						<option value="ready">Ready</option>
+						<option value="missing">Missing</option>
+					</select>
+				</div>
+			</div>
 			<div class="card shadow-sm border-0">
 				<div class="table-responsive">
 					<table class="table table-hover align-middle mb-0">
@@ -173,7 +209,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each data.registrations as reg}
+							{#each filteredRegistrations as reg (reg.id)}
 								<tr>
 									<td class="ps-4"
 										><strong>{reg.student.firstName} {reg.student.lastName}</strong></td
@@ -294,7 +330,7 @@
 		{/if}
 
 		<!-- Dietary Restrictions Summary -->
-		{#if data.registrations.filter((r) => r.student.dietaryRestrictions || r.student.intoleranceLevel).length > 0}
+		{#if dietaryRegistrations.length > 0}
 			<div class="card shadow-sm border-0 mt-4">
 				<div class="card-header bg-danger bg-opacity-10">
 					<h5 class="fw-bold mb-0 text-danger">
@@ -311,7 +347,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each data.registrations.filter((r) => r.student.dietaryRestrictions || r.student.intoleranceLevel) as reg}
+							{#each dietaryRegistrations as reg (reg.id)}
 								<tr>
 									<td class="ps-4 fw-semibold">
 										{reg.student.firstName}

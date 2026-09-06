@@ -7,6 +7,13 @@
 	function getSpot(eventId: string, mentorId: string) {
 		return data.carpoolSpots.find((s) => s.eventId === eventId && s.mentorId === mentorId);
 	}
+
+	let mentorSearch = $state("");
+	let filteredMentors = $derived(
+		data.mentors.filter((mentor) =>
+			mentor.username.toLowerCase().includes(mentorSearch.trim().toLowerCase())
+		)
+	);
 </script>
 
 <svelte:head>
@@ -20,6 +27,16 @@
 	</header>
 
 	<main class="card shadow-sm overflow-hidden">
+		<div class="p-3 border-bottom">
+			<label class="form-label mb-1" for="mentor-search">Search mentors</label>
+			<input
+				id="mentor-search"
+				class="form-control"
+				type="search"
+				placeholder="Search mentors..."
+				bind:value={mentorSearch}
+			/>
+		</div>
 		<div class="table-responsive">
 			<table class="table table-hover table-bordered mb-0 align-middle">
 				<thead class="table-light">
@@ -57,7 +74,7 @@
 						{/each}
 					</tr>
 
-					{#each data.mentors as mentor}
+					{#each filteredMentors as mentor (mentor.id)}
 						<tr>
 							<td class="sticky-col bg-white border-end fw-semibold shadow-sm">{mentor.username}</td
 							>
