@@ -140,6 +140,15 @@ export const actions: Actions = {
 			return { success: true, message: "Profile updated successfully!" };
 		} catch (e) {
 			console.error("Failed to update profile:", e);
+			if (
+				e instanceof Error &&
+				e.message.includes("UNIQUE constraint failed: students.first_name, students.last_name")
+			) {
+				return fail(400, {
+					message:
+						"A student with this name is already registered. If this is you, please sign in with your existing account."
+				});
+			}
 			return fail(500, { message: "An error occurred while saving your profile." });
 		}
 	}
