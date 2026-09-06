@@ -8,3 +8,4 @@
 - **Migration Immutability**: Once a database migration is committed and applied, never edit it; migrations are applied sequentially, so later schema changes require a new migration.
 - **Workflow Autonomy**: Proceed with implementation without waiting for design approval; pause only when scope or authorization would materially change.
 - **Enhanced Form State**: SvelteKit's default `use:enhance` resets submitted forms; editable rows should use explicit draft state and a custom `reset: false` update when saved values must remain visible.
+- **Unique Each Keys**: When adding keyed Svelte loops to reusable tables, key by the rendered column position or another guaranteed-unique identity; data-field names can legitimately repeat across columns.
