@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { actions as createActions } from "./new/+page.server";
 import { actions as editActions } from "./[userid]/+page.server";
+import { actions as shopActions } from "../shop/+page.server";
 
 function event(fields: Record<string, string>) {
 	const values = vi.fn().mockResolvedValue(undefined);
@@ -86,4 +87,44 @@ describe("admin email-only accounts", () => {
 			expect(db.update).not.toHaveBeenCalled();
 		});
 	}
+});
+
+describe("shop location bulk updates", () => {
+	it("updates every submitted location", async () => {
+		const updates = vi.fn().mockResolvedValue(undefined);
+		const set = vi.fn().mockReturnValue({ where: updates });
+		const db = { update: vi.fn().mockReturnValue({ set }) };
+		const input = {
+			request: new Request("http://localhost/admin/shop", {
+				method: "POST",
+				body: new URLSearchParams({
+					locations: JSON.stringify([
+						{ id: "one", location: "W1-B", item: "Updated Motors" },
+						{ id: "two", location: "W2-B", item: "Updated Tape" }
+					])
+				})
+			}),
+			locals: { db }
+		} as unknown as Parameters<typeof shopActions.updateAll>[0];
+
+		expect(await shopActions.updateAll(input)).toEqual({ success: "Shop locations saved." });
+		expect(set).toHaveBeenCalledTimes(2);
+		expect(updates).toHaveBeenCalledTimes(2);
+	});
+
+	it("rejects malformed bulk updates without writing", async () => {
+		const db = { update: vi.fn() };
+		const input = {
+			request: new Request("http://localhost/admin/shop", {
+				method: "POST",
+				body: new URLSearchParams({
+					locations: JSON.stringify([{ id: "one", location: "", item: "Tape" }])
+				})
+			}),
+			locals: { db }
+		} as unknown as Parameters<typeof shopActions.updateAll>[0];
+
+		expect(await shopActions.updateAll(input)).toMatchObject({ status: 400 });
+		expect(db.update).not.toHaveBeenCalled();
+	});
 });

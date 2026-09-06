@@ -9,6 +9,8 @@ const shopLocationForm = z.object({
 	item: z.string().trim().min(1, "Item is required").max(255)
 });
 
+const shopLocationUpdateForm = shopLocationForm.extend({ id: z.string().min(1) });
+
 function readLocationForm(formData: FormData) {
 	const result = shopLocationForm.safeParse({
 		location: formData.get("location"),
@@ -67,6 +69,37 @@ export const actions: Actions = {
 		}
 
 		return { success: "Shop location updated." };
+	},
+	updateAll: async ({ locals, request }) => {
+		const formData = await request.formData();
+		const rawLocations = formData.get("locations");
+		if (typeof rawLocations !== "string") {
+			return fail(400, { message: "Invalid shop locations" });
+		}
+
+		let locations: unknown;
+		try {
+			locations = JSON.parse(rawLocations);
+		} catch {
+			return fail(400, { message: "Invalid shop locations" });
+		}
+
+		const parsed = z.array(shopLocationUpdateForm).safeParse(locations);
+		if (!parsed.success) return fail(400, { message: "Invalid shop locations" });
+
+		try {
+			for (const location of parsed.data) {
+				await locals.db
+					.update(table.shopLocations)
+					.set({ location: location.location, item: location.item })
+					.where(eq(table.shopLocations.id, location.id));
+			}
+		} catch (error) {
+			console.error("Failed to bulk update shop locations", error);
+			return fail(400, { message: "Shop locations could not be saved." });
+		}
+
+		return { success: "Shop locations saved." };
 	},
 	delete: async ({ locals, request }) => {
 		const id = (await request.formData()).get("id");
