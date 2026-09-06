@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
@@ -7,7 +8,7 @@
 <div class="container">
 	<div class="d-flex justify-content-between align-items-center mb-3">
 		<h1>Create User</h1>
-		<a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+		<a href={resolve("/admin/users")} class="btn btn-secondary">Back to Users</a>
 	</div>
 
 	{#if form?.message}
@@ -16,15 +17,15 @@
 
 	<form method="POST" action="?/create">
 		<div class="mb-3">
-			<label for="username" class="form-label">Username</label>
+			<label for="username" class="form-label">Email</label>
 			<input
-				type="text"
+				type="email"
 				id="username"
 				name="username"
 				class="form-control"
 				value={form?.username ?? ""}
-				minlength="3"
-				maxlength="63"
+				autocomplete="email"
+				maxlength="254"
 				required
 			/>
 		</div>
@@ -32,7 +33,7 @@
 		<div class="mb-3">
 			<label for="role" class="form-label">Role</label>
 			<select id="role" name="role" class="form-select">
-				{#each data.roles as role}
+				{#each data.roles as role (role)}
 					<option value={role} selected={role === "user"}>
 						{role.charAt(0).toUpperCase() + role.slice(1)}
 					</option>
@@ -40,18 +41,7 @@
 			</select>
 		</div>
 
-		<div class="mb-3">
-			<label for="password" class="form-label">Password</label>
-			<input
-				type="password"
-				id="password"
-				name="password"
-				class="form-control"
-				minlength="6"
-				maxlength="255"
-				required
-			/>
-		</div>
+		<p class="text-muted">Users sign in with a magic link sent to their email address.</p>
 
 		<button type="submit" class="btn btn-success">Create User</button>
 	</form>

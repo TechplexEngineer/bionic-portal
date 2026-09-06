@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
@@ -20,12 +19,12 @@ export const load = (async ({ locals, params }) => {
 export const actions: Actions = {
 	edit: async ({ locals, params, request }) => {
 		const formData = await request.formData();
-		const username = formData.get("username");
+		const email = formData.get("username");
+		const username = typeof email === "string" ? email.trim().toLowerCase() : "";
 		const role = formData.get("role");
-		const password = formData.get("password");
 
-		if (typeof username !== "string" || username.length < 3 || username.length > 63) {
-			return fail(400, { message: "Invalid username (min 3, max 63 characters)" });
+		if (username.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
+			return fail(400, { message: "Enter a valid email address" });
 		}
 
 		if (typeof role !== "string" || !(ROLES as readonly string[]).includes(role)) {
@@ -33,13 +32,6 @@ export const actions: Actions = {
 		}
 
 		const updateData: Partial<typeof table.user.$inferInsert> = { username, role };
-
-		if (typeof password === "string" && password.length > 0) {
-			if (password.length < 6 || password.length > 255) {
-				return fail(400, { message: "Password must be between 6 and 255 characters" });
-			}
-			updateData.passwordHash = await bcrypt.hash(password, 12);
-		}
 
 		try {
 			await locals.db.update(table.user).set(updateData).where(eq(table.user.id, params.userid));

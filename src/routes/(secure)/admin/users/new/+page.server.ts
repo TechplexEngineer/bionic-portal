@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { fail, redirect } from "@sveltejs/kit";
 import * as table from "$lib/server/db/schema";
@@ -12,19 +11,12 @@ export const load = (() => {
 export const actions: Actions = {
 	create: async ({ locals, request }) => {
 		const formData = await request.formData();
-		const username = formData.get("username");
-		const password = formData.get("password");
+		const email = formData.get("username");
+		const username = typeof email === "string" ? email.trim().toLowerCase() : "";
 		const role = formData.get("role");
 
-		if (typeof username !== "string" || username.length < 3 || username.length > 63) {
-			return fail(400, { message: "Invalid username (min 3, max 63 characters)", username: "" });
-		}
-
-		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, {
-				message: "Invalid password (min 6, max 255 characters)",
-				username: username as string
-			});
+		if (username.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
+			return fail(400, { message: "Enter a valid email address", username: "" });
 		}
 
 		if (typeof role !== "string" || !(ROLES as readonly string[]).includes(role)) {
@@ -32,13 +24,13 @@ export const actions: Actions = {
 		}
 
 		const userId = generateUserId();
-		const passwordHash = await bcrypt.hash(password, 12);
+		const passwordHash = "MAGIC_LINK_ONLY";
 
 		try {
 			await locals.db.insert(table.user).values({ id: userId, username, passwordHash, role });
 		} catch {
 			return fail(500, {
-				message: "Username already exists or an error occurred",
+				message: "Email already exists or an error occurred",
 				username: username as string
 			});
 		}
