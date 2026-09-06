@@ -12,7 +12,7 @@
 		{ data: "last", title: "Last" },
 		{ data: "email", title: "Email" },
 		{ data: "total", title: "Total" },
-		{ data: "percent", title: "Percentage" }
+		{ data: "percent", title: "Percentage", render: (value: number) => `${value.toFixed(2)}%` }
 	];
 
 	for (const meeting of data.meetings) {
