@@ -61,6 +61,10 @@ export const actions: Actions = {
 			return fail(500, { message: `Failed to update student: ${reason}` });
 		}
 
-		throw redirect(303, `/admin/students/${encodeURIComponent(newUserid)}`);
+		if (newUserid !== params.userid) {
+			throw redirect(303, `/admin/students/${encodeURIComponent(newUserid)}`);
+		}
+
+		return { success: true };
 	}
 };
