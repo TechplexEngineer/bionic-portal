@@ -67,6 +67,21 @@ export const attendance = sqliteTable("attendance", {
 });
 export type Attendance = typeof attendance.$inferSelect;
 
+// ----------------------------------------------------------------------------
+// Shop Locations Table
+// ----------------------------------------------------------------------------
+export const shopLocations = sqliteTable("shop_locations", {
+	id: text("id").primaryKey(),
+	location: text("location").notNull().unique(),
+	item: text("item").notNull()
+});
+export type ShopLocation = typeof shopLocations.$inferSelect;
+
+export const shopLocationInsertSchema = createInsertSchema(shopLocations, {
+	location: (schema) => schema.min(1).max(100),
+	item: (schema) => schema.min(1).max(255)
+});
+
 export const studentsRelations = relations(students, ({ many }) => ({
 	attendance: many(attendance),
 	registrations: many(eventRegistrations)

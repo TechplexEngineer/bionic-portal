@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { students } from "./schema";
+import { shopLocations, students } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 
 describe("Database Schema tests", () => {
@@ -7,5 +7,11 @@ describe("Database Schema tests", () => {
 		const columns = getTableColumns(students);
 		expect(columns).toHaveProperty("currentGrade");
 		expect(columns).toHaveProperty("gender");
+	});
+
+	it("shop locations schema has editable location and item columns", () => {
+		const columns = getTableColumns(shopLocations);
+		expect(columns).toHaveProperty("location");
+		expect(columns).toHaveProperty("item");
 	});
 });

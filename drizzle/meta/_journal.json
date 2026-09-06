@@ -64,6 +64,13 @@
       "when": 1774010452456,
       "tag": "0008_fair_the_captain",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788702729000,
+      "tag": "0009_shop_locations",
+      "breakpoints": true
     }
   ]
 }

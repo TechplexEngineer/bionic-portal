@@ -81,6 +81,16 @@
 					route: "/admin/events/carpools"
 				}
 			]
+		},
+		{
+			name: "Shop",
+			route: "/admin/shop",
+			nested: [
+				{
+					name: "Locations",
+					route: "/admin/shop"
+				}
+			]
 		}
 	];
 
