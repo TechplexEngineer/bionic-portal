@@ -48,7 +48,7 @@ describe("admin student delete", () => {
 
 		expect(await actions.delete(input)).toEqual({ success: true });
 		expect(db.delete).toHaveBeenCalledTimes(6);
-		expect(db.delete.mock.calls.map(([deletedTable]) => deletedTable)).toEqual([
+		expect((db.delete.mock.calls as unknown[][]).map(([deletedTable]) => deletedTable)).toEqual([
 			table.parentStudentLinks,
 			table.attendance,
 			table.eventRegistrations,
