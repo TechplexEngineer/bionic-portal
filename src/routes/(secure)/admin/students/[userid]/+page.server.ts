@@ -57,7 +57,8 @@ export const actions: Actions = {
 				.where(eq(table.students.userid, params.userid));
 		} catch (e) {
 			console.error("Failed to update student:", e);
-			return fail(500, { message: "Failed to update student" });
+			const reason = e instanceof Error ? e.message : "Unknown database error";
+			return fail(500, { message: `Failed to update student: ${reason}` });
 		}
 
 		throw redirect(303, `/admin/students/${encodeURIComponent(newUserid)}`);

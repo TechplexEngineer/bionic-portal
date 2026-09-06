@@ -99,4 +99,21 @@ describe("admin student edit", () => {
 		});
 		expect(db.update).not.toHaveBeenCalled();
 	});
+
+	it("returns the database reason when the update fails", async () => {
+		const { input, db } = event({
+			userid: "updated@example.com",
+			firstName: "Ada",
+			lastName: "Lovelace"
+		});
+		const databaseReason = "UNIQUE constraint failed: students.first_name, students.last_name";
+		db.update.mockReturnValue({
+			set: vi.fn().mockReturnValue({ where: vi.fn().mockRejectedValue(new Error(databaseReason)) })
+		});
+
+		expect(await actions.default(input)).toMatchObject({
+			status: 500,
+			data: { message: `Failed to update student: ${databaseReason}` }
+		});
+	});
 });
