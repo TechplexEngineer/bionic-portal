@@ -24,15 +24,7 @@
 	</p>
 
 	<div class="row g-4 align-items-start">
-		<div class="col-md-6">
-			<h3>Upcoming Events</h3>
-			{#each data.events as evt}
-				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
-					<CountdownCard name={evt.name} date={evt.dateStr} />
-				{/if}
-			{/each}
-		</div>
-		<div class="col-md-6">
+		<div class="col-md-9">
 			<h3>Calendar</h3>
 			<iframe
 				id="calendar-iframe"
@@ -41,6 +33,15 @@
 				frameborder="0"
 				scrolling="no"
 			></iframe>
+		</div>
+
+		<div class="col-md-3">
+			<h3>Upcoming Events</h3>
+			{#each data.events as evt}
+				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
+					<CountdownCard name={evt.name} date={evt.dateStr} />
+				{/if}
+			{/each}
 		</div>
 	</div>
 </div>
