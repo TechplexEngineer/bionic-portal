@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import { resolve } from "$app/paths";
 	import TableForObjectArray, {
 		type TableColumns
@@ -7,12 +8,14 @@
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
+	const showArchivedUrl = "/admin/students?showArchived=true";
 
 	const columns: TableColumns = [
 		// Userid	FirstName	LastName	Data	Hidden
 		{ data: "userid", title: "User ID" },
 		{ data: "firstName", title: "First Name" },
 		{ data: "lastName", title: "Last Name" },
+		{ data: "graduationYear", title: "YOG" },
 		{ data: "parentCount", title: "Parents", renderSnippet: parentStatus },
 		{ data: "hidden", title: "Hidden" },
 		{ data: "userid", title: "Actions", renderSnippet: action }
@@ -31,6 +34,12 @@
 
 {#snippet action(id: string, student: Record<string, number | string | boolean | null>)}
 	<a href={resolve(`/admin/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
+	<form method="POST" action="?/toggleHidden" use:enhance style="display:inline;">
+		<input type="hidden" name="id" value={id} />
+		<button type="submit" class="btn btn-outline-secondary btn-sm me-1">
+			{student.hidden ? "Unhide" : "Hide"}
+		</button>
+	</form>
 	<form method="POST" action="?/delete" style="display:inline;">
 		<input type="hidden" name="id" value={id} />
 		<button
@@ -65,6 +74,17 @@
 
 <div class="container">
 	<h1>Student Overview</h1>
+	<div class="mb-3">
+		{#if data.showArchived}
+			<a href={resolve("/admin/students")} class="btn btn-outline-secondary btn-sm"
+				>Show current students only</a
+			>
+		{:else}
+			<a href={resolve(showArchivedUrl)} class="btn btn-outline-secondary btn-sm"
+				>Show hidden and last year's students</a
+			>
+		{/if}
+	</div>
 
 	<TableForObjectArray data={data.students} {columns} />
 </div>

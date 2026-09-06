@@ -14,6 +14,17 @@
 	let drafts = $state(createShopDrafts(data.locations));
 	let dirtyIds = $derived(getDirtyShopLocationIds(data.locations, drafts));
 	let dirtyCount = $derived(dirtyIds.length);
+	let locationSearch = $state("");
+	let locationFilter = $state("");
+	let filteredLocations = $derived(
+		data.locations.filter((location) => {
+			const query = locationSearch.trim().toLowerCase();
+			return (
+				(!query || `${location.location} ${location.item}`.toLowerCase().includes(query)) &&
+				(!locationFilter || location.location === locationFilter)
+			);
+		})
+	);
 
 	$effect(() => {
 		for (const shopLocation of data.locations) {
@@ -129,10 +140,31 @@
 	</div>
 
 	<div class="table-responsive">
+		<div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+			<div class="flex-grow-1">
+				<label class="form-label mb-1" for="shop-search">Search</label>
+				<input
+					id="shop-search"
+					class="form-control"
+					type="search"
+					placeholder="Search locations..."
+					bind:value={locationSearch}
+				/>
+			</div>
+			<div>
+				<label class="form-label mb-1" for="shop-location-filter">Filter Location</label>
+				<select id="shop-location-filter" class="form-select" bind:value={locationFilter}>
+					<option value="">All locations</option>
+					{#each data.locations as location (location.id)}
+						<option value={location.location}>{location.location}</option>
+					{/each}
+				</select>
+			</div>
+		</div>
 		<table class="table table-striped align-middle">
 			<thead><tr><th>Location</th><th>Item</th><th class="text-end">Actions</th></tr></thead>
 			<tbody>
-				{#each data.locations as shopLocation (shopLocation.id)}
+				{#each filteredLocations as shopLocation (shopLocation.id)}
 					<tr>
 						<td colspan="2">
 							<form

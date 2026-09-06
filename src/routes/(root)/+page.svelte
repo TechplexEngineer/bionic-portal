@@ -17,11 +17,7 @@
 
 <div class="container">
 	<h1>Welcome to Team 4909</h1>
-	<p class="lead">
-		Team 4909 Billerica Bionic is a <em>FIRST</em> Robotics Competition team based in Billerica, MA.<br
-		/>
-		"Using robots to build kids" - <em>Dean Kamen</em>
-	</p>
+	<p class="lead">"Using robots to build kids"</p>
 
 	<div class="row g-4 align-items-start">
 		<div class="col-md-8">
@@ -49,7 +45,7 @@
 <style>
 	#calendar-iframe {
 		width: 100%;
-		aspect-ratio: 16 / 9;
+		aspect-ratio: 16 / 10;
 		border: 0;
 	}
 </style>

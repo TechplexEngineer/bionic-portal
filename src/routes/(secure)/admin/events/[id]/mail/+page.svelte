@@ -13,6 +13,20 @@
 	let sendToParents = $state(true);
 
 	let previewIndex = $state(0);
+	let recipientSearch = $state("");
+	let recipientFilter = $state("");
+	let filteredRegistrations = $derived(
+		data.registrations.filter((registration) => {
+			const query = recipientSearch.trim().toLowerCase();
+			const name = `${registration.student.firstName} ${registration.student.lastName}`;
+			return (
+				(!query || `${name} ${registration.student.userid}`.toLowerCase().includes(query)) &&
+				(!recipientFilter ||
+					(selectedRecipients.includes(registration.id) ? "selected" : "unselected") ===
+						recipientFilter)
+			);
+		})
+	);
 
 	function insertVariable(variable: string) {
 		const textarea = document.getElementById("template-editor") as HTMLTextAreaElement;
@@ -200,6 +214,26 @@
 						</button>
 					</div>
 					<div class="card-body p-0" style="max-height: 60vh; overflow-y: auto;">
+						<div class="d-flex flex-wrap gap-2 align-items-end p-3 border-bottom">
+							<div class="flex-grow-1">
+								<label class="form-label mb-1" for="recipient-search">Search recipients</label>
+								<input
+									id="recipient-search"
+									class="form-control"
+									type="search"
+									placeholder="Search students or email..."
+									bind:value={recipientSearch}
+								/>
+							</div>
+							<div>
+								<label class="form-label mb-1" for="recipient-filter">Filter</label>
+								<select id="recipient-filter" class="form-select" bind:value={recipientFilter}>
+									<option value="">All recipients</option>
+									<option value="selected">Selected</option>
+									<option value="unselected">Unselected</option>
+								</select>
+							</div>
+						</div>
 						<table class="table table-hover mb-0">
 							<thead class="table-light sticky-top" style="top: 0;">
 								<tr>
@@ -209,7 +243,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{#each data.registrations as reg}
+								{#each filteredRegistrations as reg (reg.id)}
 									<tr>
 										<td>
 											<input

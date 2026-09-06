@@ -32,6 +32,9 @@
 		columns = Object.keys(data[0] || { "No Data": "" })
 	}: Props = $props();
 
+	let searchTerm = $state("");
+	let filters = $state<Record<string, string>>({});
+
 	// export let data: Record<string, string | number>[];
 	// export let id: string = '';
 	// export let tableName: string = '';
@@ -49,6 +52,39 @@
 		})
 	);
 
+	const filterOptions = $derived(
+		cols2Render.map((column) => ({
+			...column,
+			values: Array.from(
+				new Set(
+					data.map((row) => String(row[column.data] ?? "")).filter((value) => value.length > 0)
+				)
+			).sort((a, b) => a.localeCompare(b))
+		}))
+	);
+
+	const filteredData = $derived(
+		data.filter((row) => {
+			const normalizedSearch = searchTerm.trim().toLowerCase();
+			const matchesSearch =
+				normalizedSearch.length === 0 ||
+				cols2Render.some((column) =>
+					String(row[column.data] ?? "")
+						.toLowerCase()
+						.includes(normalizedSearch)
+				);
+			const matchesFilters = cols2Render.every(
+				(column) => !filters[column.data] || String(row[column.data] ?? "") === filters[column.data]
+			);
+			return matchesSearch && matchesFilters;
+		})
+	);
+
+	function clearFilters() {
+		searchTerm = "";
+		filters = {};
+	}
+
 	// const exportExcel = () => {
 	// 	const worksheet = XLSX.utils.json_to_sheet(data);
 	// 	const workbook = XLSX.utils.book_new();
@@ -60,6 +96,49 @@
 <!-- <div class="d-flex justify-content-end d-print-none">
 	<button class="btn btn-info" onclick={exportExcel}>Export Table Excel</button>
 </div> -->
+<div class="d-flex flex-wrap gap-2 align-items-end mb-3 d-print-none">
+	<div class="flex-grow-1">
+		<label class="form-label mb-1" for={`${id ?? "table"}-search`}>Search</label>
+		<input
+			id={`${id ?? "table"}-search`}
+			type="search"
+			class="form-control"
+			placeholder="Search this table..."
+			aria-label="Search this table"
+			bind:value={searchTerm}
+		/>
+	</div>
+	{#each filterOptions as option, index (index)}
+		{#if option.values.length > 0}
+			<div>
+				<label class="form-label mb-1" for={`${id ?? "table"}-filter-${option.data}-${index}`}
+					>Filter {option.title}</label
+				>
+				<select
+					id={`${id ?? "table"}-filter-${option.data}-${index}`}
+					class="form-select"
+					aria-label={`Filter ${option.title}`}
+					value={filters[option.data] ?? ""}
+					onchange={(event) => {
+						filters[option.data] = event.currentTarget.value;
+					}}
+				>
+					<option value="">All {option.title}</option>
+					{#each option.values as value (value)}
+						<option {value}>{value}</option>
+					{/each}
+				</select>
+			</div>
+		{/if}
+	{/each}
+	{#if searchTerm || Object.values(filters).some(Boolean)}
+		<button type="button" class="btn btn-outline-secondary" onclick={clearFilters}>Clear</button>
+	{/if}
+</div>
+<p class="text-muted small mb-2 d-print-none">
+	Showing {filteredData.length} of {data.length} rows
+</p>
+
 <table class="table table-striped table-bordered-vertical" {id}>
 	<thead>
 		<tr>
@@ -69,7 +148,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each data as row}
+		{#each filteredData as row}
 			<tr>
 				{#each cols2Render as colCfg}
 					<td style="border-right: 1px solid #dee2e6; border-left: 1px solid #dee2e6;">

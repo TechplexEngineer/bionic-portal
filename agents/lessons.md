@@ -9,3 +9,4 @@
 - **Workflow Autonomy**: Proceed with implementation without waiting for design approval; pause only when scope or authorization would materially change.
 - **Enhanced Form State**: SvelteKit's default `use:enhance` resets submitted forms; editable rows should use explicit draft state and a custom `reset: false` update when saved values must remain visible.
 - **Enhanced Form Navigation**: Actions submitted with `use:enhance` should return success instead of redirecting when the URL does not change; same-page redirects reset the browser scroll position.
+- **Unique Each Keys**: When adding keyed Svelte loops to reusable tables, key by the rendered column position or another guaranteed-unique identity; data-field names can legitimately repeat across columns.

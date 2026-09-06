@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { fireEvent, render, screen } from "@testing-library/svelte";
+import { within } from "@testing-library/dom";
 import TableForObjectArray, { type TableColumns } from "./TableForObjectArray.svelte";
 
 const sampleData = [{ name: "Alice", age: "25" }];
@@ -33,7 +34,7 @@ describe("TableForObjectArray", () => {
 		const columns = [{ data: "name", title: "Age" }];
 		render(TableForObjectArray, { data: sampleData, columns: columns });
 		expect(screen.queryByText("Age")).toBeVisible();
-		expect(screen.queryByText("Alice")).toBeVisible();
+		expect(within(screen.getByRole("table")).getByText("Alice")).toBeVisible();
 		expect(screen.queryByText("25")).toBeNull();
 	});
 
@@ -71,5 +72,43 @@ describe("TableForObjectArray", () => {
 		render(TableForObjectArray, { data: sampleData, columns: columns });
 		screen.debug();
 		expect(document.querySelector("tbody tr td strong")?.textContent).toBe(sampleData[0].name);
+	});
+
+	it("searches across visible columns", async () => {
+		render(TableForObjectArray, {
+			data: [
+				{ name: "Alice", age: "25" },
+				{ name: "Bob", age: "30" }
+			]
+		});
+		await fireEvent.input(screen.getByRole("searchbox"), { target: { value: "bob" } });
+
+		expect(within(screen.getByRole("table")).getByText("Bob")).toBeVisible();
+		expect(within(screen.getByRole("table")).queryByText("Alice")).toBeNull();
+	});
+
+	it("filters rows by a column value", async () => {
+		render(TableForObjectArray, {
+			data: [
+				{ name: "Alice", age: "25" },
+				{ name: "Bob", age: "30" }
+			]
+		});
+		await fireEvent.change(screen.getByLabelText("Filter Age"), { target: { value: "30" } });
+
+		expect(within(screen.getByRole("table")).getByText("Bob")).toBeVisible();
+		expect(within(screen.getByRole("table")).queryByText("Alice")).toBeNull();
+	});
+
+	it("supports repeated data fields in separate columns", () => {
+		render(TableForObjectArray, {
+			data: [{ userid: "alice@example.com" }],
+			columns: [
+				{ data: "userid", title: "User ID" },
+				{ data: "userid", title: "Actions" }
+			]
+		});
+
+		expect(screen.getAllByRole("combobox")).toHaveLength(2);
 	});
 });
