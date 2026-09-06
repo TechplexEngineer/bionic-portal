@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { actions } from "./+page.server";
 import { actions as verification, load } from "./verify/+page.server";
 import { issueMagicLink } from "$lib/server/magicLinks";
+import { getLoginUrl, getSafeReturnPath } from "$lib/server/authRedirect";
 import type { DbInstance } from "$lib/server/db";
 
 vi.mock("$env/dynamic/private", () => ({ env: {} }));
@@ -47,8 +48,17 @@ describe("magic-link routes", () => {
 		expect(sendMagicLink).toHaveBeenCalledWith(
 			"person@example.org",
 			expect.stringMatching(
-				/^https:\/\/portal.example.org\/login\/verify\?token=[A-Za-z0-9_-]{43}$/
+				/^https:\/\/portal.example.org\/login\/verify\?token=[A-Za-z0-9_-]{43}&next=%2Fdashboard$/
 			),
+			"test-key"
+		);
+	});
+	it("preserves a safe return path in the magic link", async () => {
+		await actions.requestLink!(event({ email: "person@example.org", next: "/attend?event=42" }));
+
+		expect(sendMagicLink).toHaveBeenCalledWith(
+			"person@example.org",
+			expect.stringContaining("next=%2Fattend%3Fevent%3D42"),
 			"test-key"
 		);
 	});
@@ -85,7 +95,10 @@ describe("magic-link routes", () => {
 		const token = await issueMagicLink(db, "person@example.org");
 		const input = verificationEvent({ token: token! });
 		input.url.searchParams.set("token", token!);
-		expect(await load(input as unknown as Parameters<typeof load>[0])).toEqual({ token });
+		expect(await load(input as unknown as Parameters<typeof load>[0])).toEqual({
+			token,
+			next: "/dashboard"
+		});
 		expect(sqlite.prepare("SELECT count(*) AS count FROM magic_codes").get().count).toBe(1);
 		await expect(verification.default!(input)).rejects.toMatchObject({
 			status: 303,
@@ -96,6 +109,15 @@ describe("magic-link routes", () => {
 		expect(sqlite.prepare("SELECT user_id FROM session").get().user_id).toBe("admin-id");
 		expect(await verification.default!(verificationEvent({ token: token! }))).toMatchObject({
 			status: 400
+		});
+	});
+	it("redirects to the requested page after magic-link authentication", async () => {
+		const token = await issueMagicLink(db, "person@example.org");
+		const input = verificationEvent({ token: token!, next: "/attend?event=42" });
+
+		await expect(verification.default!(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/attend?event=42"
 		});
 	});
 	it("rejects ambiguous legacy usernames without creating a session", async () => {
@@ -122,5 +144,15 @@ describe("magic-link routes", () => {
 			username: "new@example.org",
 			role: "user"
 		});
+	});
+	it("falls back to the dashboard for an external return path", () => {
+		expect(getSafeReturnPath("https://evil.example/phishing")).toBe("/dashboard");
+		expect(getSafeReturnPath("//evil.example/phishing")).toBe("/dashboard");
+		expect(getSafeReturnPath("/dashboard")).toBe("/dashboard");
+	});
+	it("captures the requested path and query string for the login redirect", () => {
+		expect(getLoginUrl(new URL("https://portal.example.org/admin/events?status=draft"))).toBe(
+			"/login?next=%2Fadmin%2Fevents%3Fstatus%3Ddraft"
+		);
 	});
 });

@@ -4,15 +4,21 @@ import * as auth from "$lib/server/auth";
 import { user } from "$lib/server/db/schema";
 import { consumeMagicLink, isMagicLinkToken } from "$lib/server/magicLinks";
 import type { Actions, PageServerLoad } from "./$types";
+import { getSafeReturnPath } from "$lib/server/authRedirect";
 
 export const load: PageServerLoad = (event) => {
 	const token = event.url.searchParams.get("token");
-	return { token: isMagicLinkToken(token) ? token : null };
+	return {
+		token: isMagicLinkToken(token) ? token : null,
+		next: getSafeReturnPath(event.url.searchParams.get("next"))
+	};
 };
 
 export const actions: Actions = {
 	default: async (event) => {
 		const formData = await event.request.formData();
+		const rawNext = formData.get("next");
+		const next = getSafeReturnPath(typeof rawNext === "string" ? rawNext : null);
 		const db = event.locals.db;
 		const email = await consumeMagicLink(db, formData.get("token"));
 		if (!email)
@@ -43,6 +49,6 @@ export const actions: Actions = {
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, existingUser.id, db);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		redirect(303, "/dashboard");
+		redirect(303, next);
 	}
 };
