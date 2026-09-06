@@ -108,14 +108,14 @@
 			bind:value={searchTerm}
 		/>
 	</div>
-	{#each filterOptions as option (option.data)}
+	{#each filterOptions as option, index (index)}
 		{#if option.values.length > 0}
 			<div>
-				<label class="form-label mb-1" for={`${id ?? "table"}-filter-${option.data}`}
+				<label class="form-label mb-1" for={`${id ?? "table"}-filter-${option.data}-${index}`}
 					>Filter {option.title}</label
 				>
 				<select
-					id={`${id ?? "table"}-filter-${option.data}`}
+					id={`${id ?? "table"}-filter-${option.data}-${index}`}
 					class="form-select"
 					aria-label={`Filter ${option.title}`}
 					value={filters[option.data] ?? ""}

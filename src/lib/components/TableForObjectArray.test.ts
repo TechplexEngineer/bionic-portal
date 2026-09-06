@@ -99,4 +99,16 @@ describe("TableForObjectArray", () => {
 		expect(within(screen.getByRole("table")).getByText("Bob")).toBeVisible();
 		expect(within(screen.getByRole("table")).queryByText("Alice")).toBeNull();
 	});
+
+	it("supports repeated data fields in separate columns", () => {
+		render(TableForObjectArray, {
+			data: [{ userid: "alice@example.com" }],
+			columns: [
+				{ data: "userid", title: "User ID" },
+				{ data: "userid", title: "Actions" }
+			]
+		});
+
+		expect(screen.getAllByRole("combobox")).toHaveLength(2);
+	});
 });
