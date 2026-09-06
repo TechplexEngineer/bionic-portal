@@ -23,52 +23,8 @@
 		"Using robots to build kids" - <em>Dean Kamen</em>
 	</p>
 
-	<div class="row">
-		<div class="col-md-4 mb-3">
-			{@render card("For Parents", [
-				"See upcoming events",
-				"Register your student to compete",
-				"Sign up to volunteer",
-				"View student attendance"
-			])}
-
-			<!-- <div class="card h-100">
-				<div class="card-body">
-					<h5 class="card-title">For Parents</h5>
-					<div class="card-text">
-						<ul>
-							<li>See upcoming events</li>
-							<li>Register your student to compete</li>
-							<li>Sign up to volunteer</li>
-							<li>View student attendance</li>
-						</ul>
-					</div>
-					<a href="/register" class="btn btn-primary">Register</a>
-					<a href="/login" class="btn btn-primary">Login</a>
-				</div>
-			</div> -->
-		</div>
-
-		<div class="col-md-4 mb-3">
-			{@render card("For Students", ["Sign up for events", "View your attendance history"])}
-
-			<!-- <div class="card h-100">
-				<div class="card-body">
-					<h5 class="card-title">For Students</h5>
-					<div class="card-text">
-						<ul>
-							<li>Sign up for events</li>
-							<li>View your attendance history</li>
-						</ul>
-					</div>
-					<a href="/register" class="btn btn-primary">Register</a>
-					<a href="/login" class="btn btn-primary">Login</a>
-				</div>
-			</div>
-		-->
-		</div>
-
-		<div class="col-md-4 mb-3">
+	<div class="row g-4 align-items-start">
+		<div class="col-md-6">
 			<h3>Upcoming Events</h3>
 			{#each data.events as evt}
 				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
@@ -76,9 +32,8 @@
 				{/if}
 			{/each}
 		</div>
-	</div>
-	<div class="row">
-		<div class="col">
+		<div class="col-md-6">
+			<h3>Calendar</h3>
 			<iframe
 				id="calendar-iframe"
 				title="Team 4909 Calendar"
@@ -89,37 +44,6 @@
 		</div>
 	</div>
 </div>
-
-{#snippet card(eventName: string, actions: string[])}
-	<div class="card h-100">
-		<div class="card-header bg-white d-flex">
-			<h2 class="h5 fw-bold mb-0 text-dark">{eventName}</h2>
-		</div>
-		<div class="card-body py-2">
-			<div class="d-flex flex-column gap-2 text-secondary small">
-				<ul>
-					{#each actions as action}
-						<li class="d-flex align-items-center gap-2">
-							<span class="s-Lgf0i2eTvRtO">{action}</span>
-						</li>
-					{/each}
-				</ul>
-			</div>
-		</div>
-		<div class="card-footer bg-white border-top-0 pt-0 pb-3">
-			<div
-				class="d-flex flex-wrap gap-2 justify-content-end align-items-center pt-3 border-top mt-2"
-			>
-				<a class="btn btn-outline-secondary btn-sm" href="/login"
-					><i class="fa fa-user me-1"></i> Login</a
-				>
-				<a class="btn btn-outline-secondary btn-sm" href="/register"
-					><i class="fa fa-user-plus me-1"></i> Register</a
-				>
-			</div>
-		</div>
-	</div>
-{/snippet}
 
 <style>
 	#calendar-iframe {
