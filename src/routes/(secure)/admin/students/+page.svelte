@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import TableForObjectArray, {
 		type TableColumns
 	} from "$lib/components/TableForObjectArray.svelte";
@@ -28,8 +29,38 @@
 	{/if}
 {/snippet}
 
-{#snippet action(id: string)}
-	<a href={`/admin/students/${id}`} class="btn btn-primary btn-small">Edit</a>
+{#snippet action(id: string, student: Record<string, number | string | boolean | null>)}
+	<a href={resolve(`/admin/students/${id}`)} class="btn btn-primary btn-sm me-1">Edit</a>
+	<form method="POST" action="?/delete" style="display:inline;">
+		<input type="hidden" name="id" value={id} />
+		<button
+			type="submit"
+			class="btn btn-danger btn-sm"
+			onclick={(event) => {
+				const relatedRecords = [
+					["parent links", student.parentCount],
+					["attendance records", student.attendanceCount],
+					["event registrations", student.registrationCount],
+					["room assignments", student.roomAssignmentCount],
+					["carpool assignments", student.carpoolAssignmentCount]
+				]
+					.filter(([, count]) => Number(count) > 0)
+					.map(([label, count]) => `${count} ${label}`);
+				const summary =
+					relatedRecords.length > 0
+						? `\n\nThis will also delete: ${relatedRecords.join(", ")}.`
+						: "";
+
+				if (
+					!confirm(
+						`Permanently delete ${student.firstName} ${student.lastName} (${id})?${summary}\n\nThis cannot be undone.`
+					)
+				) {
+					event.preventDefault();
+				}
+			}}>Delete</button
+		>
+	</form>
 {/snippet}
 
 <div class="container">
