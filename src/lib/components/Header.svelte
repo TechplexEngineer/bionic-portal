@@ -83,7 +83,11 @@
 						</li>
 						<li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
 						<li><hr class="dropdown-divider" /></li>
-						<li><a class="dropdown-item" href="/logout">Sign out</a></li>
+						<li>
+							<form method="POST" action="/logout">
+								<button type="submit" class="dropdown-item">Sign out</button>
+							</form>
+						</li>
 					</ul>
 				</div>
 			{:else}
