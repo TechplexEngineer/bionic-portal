@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import type { ActionData } from "./$types";
-	let { form }: { form: ActionData } = $props();
+	import type { ActionData, PageData } from "./$types";
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let requesting = $state(false);
 </script>
 
@@ -38,6 +38,7 @@
 						};
 					}}
 				>
+					<input type="hidden" name="next" value={data.next} />
 					<div class="mb-3">
 						<label for="email" class="form-label">Email address</label>
 						<input

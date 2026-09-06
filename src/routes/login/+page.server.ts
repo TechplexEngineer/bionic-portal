@@ -3,15 +3,19 @@ import type { Actions, PageServerLoad } from "./$types";
 import { sendMagicLink } from "$lib/server/brevo";
 import { issueMagicLink, revokeMagicLink } from "$lib/server/magicLinks";
 import { env } from "$env/dynamic/private";
+import { getSafeReturnPath } from "$lib/server/authRedirect";
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) redirect(302, "/dashboard");
-	return {};
+	const next = getSafeReturnPath(event.url.searchParams.get("next"));
+	if (event.locals.user) redirect(302, next);
+	return { next };
 };
 
 export const actions: Actions = {
 	requestLink: async (event) => {
 		const formData = await event.request.formData();
+		const rawNext = formData.get("next");
+		const next = getSafeReturnPath(typeof rawNext === "string" ? rawNext : null);
 		const rawEmail = formData.get("email");
 		const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 		if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -31,6 +35,7 @@ export const actions: Actions = {
 				return fail(429, { message: "Please wait one minute before requesting another link." });
 			const url = new URL("/login/verify", event.url.origin);
 			url.searchParams.set("token", token);
+			url.searchParams.set("next", next);
 			await sendMagicLink(email, url.toString(), apiKey);
 			return {
 				success: true,

@@ -35,6 +35,7 @@
 						}}
 					>
 						<input type="hidden" name="token" value={data.token} />
+						<input type="hidden" name="next" value={data.next} />
 						<button type="submit" class="btn btn-primary w-100" disabled={signingIn}
 							>{signingIn ? "Signing in…" : "Sign in"}</button
 						>
