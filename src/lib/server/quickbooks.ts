@@ -36,7 +36,9 @@ interface TokenInfo {
 }
 
 export async function getAuthorizationUrl() {
-
+	if (typeof CLIENT_ID !== "string") {
+		throw new Error("QuickBooks client ID is not configured");
+	}
 
 
     const url = new URL("https://appcenter.intuit.com/connect/oauth2");

@@ -23,7 +23,7 @@
 			.filter(Boolean);
 	}
 
-	function getRoomCapacity(gender: string) {
+	function getRoomCapacity(gender: string | null) {
 		if (gender === "Mentors") return data.event.mentorsPerRoom || 2;
 		return data.event.studentsPerRoom || 4;
 	}

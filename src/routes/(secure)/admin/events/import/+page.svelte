@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { layoutState } from "/src/routes/(secure)/admin/+layout.svelte";
+	import { layoutState } from "../../+layout.svelte";
 	import type { PageProps } from "./$types";
 	import * as XLSX from "xlsx";
 	import ImportMapping from "$lib/components/ImportMapping.svelte";

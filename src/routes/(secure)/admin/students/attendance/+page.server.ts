@@ -42,7 +42,7 @@ export const load = (async ({ locals }) => {
 			first: student.firstName,
 			last: student.lastName,
 			total: student.attendance?.length ?? 0,
-			percent: `${totalMeetings > 0 ? ((student.attendance?.length ?? 0) / totalMeetings) * 100 : 0}%`
+			percent: totalMeetings > 0 ? ((student.attendance?.length ?? 0) / totalMeetings) * 100 : 0
 			// Meetings: {},
 		};
 
