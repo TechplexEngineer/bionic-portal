@@ -111,16 +111,16 @@
 										<form
 											method="post"
 											action="?/delete"
-											onsubmit={(e) => {
+											use:enhance={({ cancel }) => {
 												if (
 													!confirm(
 														"Are you sure you want to delete this event? This action cannot be undone."
 													)
 												) {
-													e.preventDefault();
+													cancel();
+													return;
 												}
-											}}
-											use:enhance={() => {
+
 												deletingId = event.id;
 												return async ({ update }) => {
 													await update();
