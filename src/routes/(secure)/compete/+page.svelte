@@ -2,7 +2,7 @@
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	let registering = $state<string | null>(null);
 </script>
@@ -16,6 +16,10 @@
 		<h1>Register to Compete</h1>
 		<p class="subtitle">Join our upcoming events and show your skills!</p>
 	</header>
+
+	{#if form?.message}
+		<div class="alert alert-danger" role="alert">{form.message}</div>
+	{/if}
 
 	{#if data.events.length === 0}
 		<div class="empty-state">
