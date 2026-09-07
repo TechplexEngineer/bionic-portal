@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { actions } from "./+page.server";
+import { actions, load } from "./+page.server";
 import * as auth from "$lib/server/auth";
 
 describe("logout route", () => {
@@ -14,7 +14,7 @@ describe("logout route", () => {
 			cookies: {}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0];
 
-		await expect(actions.default!(event)).rejects.toMatchObject({
+		await expect(load!(event)).rejects.toMatchObject({
 			status: 303,
 			location: "/login"
 		});
