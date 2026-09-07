@@ -14,7 +14,7 @@
 				<h1 class="h3 text-center">Bionic Portal</h1>
 				<p class="text-center text-body-secondary">Sign in with an email magic link.</p>
 				<p class="text-center text-body-secondary">
-					Please use <a href="http://billericak12.com">billericak12.com email addresses</a>.
+					Use a <strong>billericak12.com</strong> email address.
 				</p>
 				{#if form?.message}
 					<div class={form.success ? "alert alert-success" : "alert alert-danger"} role="status">
@@ -52,6 +52,7 @@
 							autocomplete="email"
 							maxlength="254"
 							value={form?.email ?? ""}
+							placeholder="@billericak12.com"
 							required
 						/>
 					</div>

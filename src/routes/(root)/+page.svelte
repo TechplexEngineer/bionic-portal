@@ -21,6 +21,14 @@
 
 	<div class="row g-4 align-items-start">
 		<div class="col-md-8">
+			<div class="row">
+				<div class="col">
+					<h3>New Team Member <a href="/register" class="btn btn-primary">Register</a></h3>
+				</div>
+				<div class="col">
+					<h3>Returning Member <a href="/login" class="btn btn-primary">Login</a></h3>
+				</div>
+			</div>
 			<h3>Calendar</h3>
 			<iframe
 				id="calendar-iframe"
