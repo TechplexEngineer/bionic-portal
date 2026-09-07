@@ -22,8 +22,8 @@ describe("Header authenticated navigation", () => {
 		expect(headerMarkup).toMatch(/href="\/admin"[^>]*>Admin Dashboard<\/a>/);
 	});
 
-	it("renders both event destinations in the authenticated navbar", () => {
-		expect(headerMarkup).toMatch(/href="\/attend"[\s\S]*>Events<\/a/);
-		expect(headerMarkup).toMatch(/href="\/compete"[\s\S]*>Events \(\/compete\)<\/a/);
+	it("renders Events as a link to the compete page", () => {
+		expect(headerMarkup).toMatch(/href="\/compete"[\s\S]*>Events<\/a/);
+		expect(headerMarkup).not.toMatch(/href="\/attend"/);
 	});
 });
