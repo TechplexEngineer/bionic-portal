@@ -25,13 +25,15 @@
 		tableName?: string;
 		columns?: TableColumns;
 		toolbar?: Snippet;
+		searchable?: boolean;
 	}
 	const {
 		data,
 		id,
 		tableName,
 		columns = Object.keys(data[0] || { "No Data": "" }),
-		toolbar
+		toolbar,
+		searchable = true
 	}: Props = $props();
 
 	let searchTerm = $state("");
@@ -55,6 +57,8 @@
 
 	const filteredData = $derived(
 		data.filter((row) => {
+			if (!searchable) return true;
+
 			const normalizedSearch = searchTerm.trim().toLowerCase();
 			const matchesSearch =
 				normalizedSearch.length === 0 ||
@@ -78,27 +82,33 @@
 <!-- <div class="d-flex justify-content-end d-print-none">
 	<button class="btn btn-info" onclick={exportExcel}>Export Table Excel</button>
 </div> -->
-<div class="d-flex flex-wrap gap-2 align-items-end mb-3 d-print-none">
-	<div class="flex-grow-1">
-		<label class="form-label mb-1" for={`${id ?? "table"}-search`}>Search</label>
-		<input
-			id={`${id ?? "table"}-search`}
-			type="search"
-			class="form-control"
-			placeholder="Search this table..."
-			aria-label="Search this table"
-			bind:value={searchTerm}
-		/>
+{#if searchable || toolbar}
+	<div class="d-flex flex-wrap gap-2 align-items-end mb-3 d-print-none">
+		{#if searchable}
+			<div class="flex-grow-1">
+				<label class="form-label mb-1" for={`${id ?? "table"}-search`}>Search</label>
+				<input
+					id={`${id ?? "table"}-search`}
+					type="search"
+					class="form-control"
+					placeholder="Search this table..."
+					aria-label="Search this table"
+					bind:value={searchTerm}
+				/>
+			</div>
+		{/if}
+		{#if toolbar}
+			<div class="ms-auto">
+				{@render toolbar()}
+			</div>
+		{/if}
 	</div>
-	{#if toolbar}
-		<div class="ms-auto">
-			{@render toolbar()}
-		</div>
-	{/if}
-</div>
-<p class="text-muted small mb-2 d-print-none">
-	Showing {filteredData.length} of {data.length} rows
-</p>
+{/if}
+{#if searchable}
+	<p class="text-muted small mb-2 d-print-none">
+		Showing {filteredData.length} of {data.length} rows
+	</p>
+{/if}
 
 <table class="table table-striped table-bordered-vertical" {id}>
 	<thead>

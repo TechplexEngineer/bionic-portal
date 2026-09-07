@@ -99,6 +99,16 @@ describe("TableForObjectArray", () => {
 		expect(screen.queryByRole("combobox")).toBeNull();
 	});
 
+	it("can hide the search control", () => {
+		render(TableForObjectArray, {
+			data: sampleData,
+			searchable: false
+		});
+
+		expect(screen.queryByRole("searchbox")).toBeNull();
+		expect(within(screen.getByRole("table")).getByText("Alice")).toBeVisible();
+	});
+
 	it("supports repeated data fields in separate columns", () => {
 		render(TableForObjectArray, {
 			data: [{ userid: "alice@example.com" }],
