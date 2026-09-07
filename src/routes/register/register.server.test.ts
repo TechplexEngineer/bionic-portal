@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { actions } from "./+page.server";
+import { actions, load } from "./+page.server";
 
 function event(fields: Record<string, string>) {
 	const onConflictDoUpdate = vi.fn();
@@ -35,6 +35,18 @@ const validFields = {
 };
 
 describe("student registration", () => {
+	it("preserves the registration URL when redirecting an unauthenticated user to login", async () => {
+		const input = {
+			url: new URL("https://portal.example.org/register"),
+			locals: { user: null }
+		} as unknown as Parameters<typeof load>[0];
+
+		await expect(load(input)).rejects.toMatchObject({
+			status: 302,
+			location: "/login?next=%2Fregister"
+		});
+	});
+
 	it("shows a friendly message when the student name is already registered", async () => {
 		const { input, onConflictDoUpdate } = event(validFields);
 		onConflictDoUpdate.mockRejectedValue(
