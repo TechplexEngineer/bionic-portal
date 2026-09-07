@@ -106,7 +106,7 @@
 	</form>
 {/snippet}
 
-<div class="container mx-auto">
+<div class="container-fluid mx-auto">
 	<div class="row">
 		<div class="col">
 			{#if form?.error}
@@ -129,8 +129,7 @@
 			</div>
 
 			<TableForObjectArray data={filteredMembersNotHere} columns={notHereColumns} />
-		</div>
-		<div class="col">
+
 			<div class="d-flex justify-content-between align-items-center">
 				<h2>Here</h2>
 				<span class="badge bg-secondary rounded-pill">
@@ -148,21 +147,21 @@
 					{/if}
 				{/each}
 			</div>
-			<div>
-				<h2>Shop Search</h2>
-				<input
-					type="text"
-					class="form-control me-2"
-					placeholder="Filter locations..."
-					bind:value={shopSearch}
-				/>
-				{#each filteredLocations as loc}
-					<div class="border p-2 my-1">
-						<strong>{loc.location}:</strong>
-						{loc.item}
-					</div>
-				{/each}
-			</div>
+		</div>
+		<div class="col">
+			<h2>Shop Search</h2>
+			<input
+				type="text"
+				class="form-control me-2"
+				placeholder="Filter locations..."
+				bind:value={shopSearch}
+			/>
+			{#each filteredLocations as loc}
+				<div class="border p-2 my-1">
+					<strong>{loc.location}:</strong>
+					{loc.item}
+				</div>
+			{/each}
 		</div>
 	</div>
 
