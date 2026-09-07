@@ -65,16 +65,9 @@
 					</li>
 					<li class="nav-item">
 						<a
-							class="nav-link {$page.url.pathname === '/attend' ? 'active' : ''}"
-							aria-current="page"
-							href="/attend">Events</a
-						>
-					</li>
-					<li class="nav-item">
-						<a
 							class="nav-link {$page.url.pathname === '/compete' ? 'active' : ''}"
 							aria-current="page"
-							href="/compete">Events (/compete)</a
+							href="/compete">Events</a
 						>
 					</li>
 					{#if user.role === "admin"}
