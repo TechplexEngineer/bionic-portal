@@ -40,13 +40,11 @@
 
 	{#if form?.message}<div class="alert alert-danger">{form.message}</div>{/if}
 	<div class="row g-4">
-		<div class="col-lg-4">
+		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
 					<h2 class="h5">Add a form</h2>
-					<p class="small text-muted">
-						Upload the blank PDF, then place required text and signature fields on it.
-					</p>
+					<p class="small text-muted">Upload the blank PDF before opening the field editor.</p>
 					<form
 						method="post"
 						action="?/save"
@@ -58,9 +56,11 @@
 								saving = false;
 							};
 						}}
+						class="row g-3 align-items-end"
 					>
-						<div class="mb-3">
-							<label class="form-label" for="form-name">Form name</label><input
+						<div class="col-md-5">
+							<label class="form-label" for="form-name">Form name</label>
+							<input
 								id="form-name"
 								name="name"
 								class="form-control"
@@ -69,8 +69,9 @@
 								required
 							/>
 						</div>
-						<div class="mb-3">
-							<label class="form-label" for="base-pdf">Blank PDF</label><input
+						<div class="col-md-5">
+							<label class="form-label" for="base-pdf">Blank PDF</label>
+							<input
 								id="base-pdf"
 								name="pdf"
 								class="form-control"
@@ -78,16 +79,36 @@
 								accept="application/pdf,.pdf"
 								onchange={choosePdf}
 								required
-							/>{#if pdfError}<div class="text-danger small mt-1">{pdfError}</div>{/if}
+							/>
+							{#if pdfError}<div class="text-danger small mt-1">{pdfError}</div>{/if}
 						</div>
-						<input type="hidden" name="definition" value={JSON.stringify(definition)} />
-						<button class="btn btn-primary" type="submit" disabled={saving || !pdfFile}
-							>{saving ? "Saving…" : "Save form"}</button
-						>
+						<div class="col-md-2">
+							<input type="hidden" name="definition" value={JSON.stringify(definition)} />
+							<button class="btn btn-primary w-100" type="submit" disabled={saving || !pdfFile}
+								>{saving ? "Saving…" : "Save form"}</button
+							>
+						</div>
 					</form>
 				</div>
 			</div>
-			<div class="card mt-4">
+		</div>
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					{#if source}<div class="bionic-sign w-100">
+							<PdfFormDesigner
+								{source}
+								{definition}
+								ondefinitionchange={(next) => (definition = next)}
+							/>
+						</div>{:else}<div class="text-center text-muted py-5">
+							Choose a PDF to open the form creator.
+						</div>{/if}
+				</div>
+			</div>
+		</div>
+		<div class="col-12">
+			<div class="card">
 				<div class="card-body">
 					<h2 class="h5">Saved forms</h2>
 					{#if data.forms.length === 0}<p class="text-muted mb-0">No forms added yet.</p>{:else}<ul
@@ -101,21 +122,6 @@
 									>
 								</li>{/each}
 						</ul>{/if}
-				</div>
-			</div>
-		</div>
-		<div class="col-lg-8">
-			<div class="card">
-				<div class="card-body">
-					{#if source}<div class="bionic-sign">
-							<PdfFormDesigner
-								{source}
-								{definition}
-								ondefinitionchange={(next) => (definition = next)}
-							/>
-						</div>{:else}<div class="text-center text-muted py-5">
-							Choose a PDF to open the form creator.
-						</div>{/if}
 				</div>
 			</div>
 		</div>
