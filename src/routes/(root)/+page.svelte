@@ -25,7 +25,7 @@
 			<iframe
 				id="calendar-iframe"
 				title="Team 4909 Calendar"
-				src="https://calendar.google.com/calendar/embed?src=team4909%40gmail.com&ctz=America%2FNew_York"
+				src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FNew_York&title=Team%204909&showTz=0&showCalendars=0&src=dGVhbTQ5MDlAZ21haWwuY29t&color=%230b8043"
 				frameborder="0"
 				scrolling="no"
 			></iframe>
