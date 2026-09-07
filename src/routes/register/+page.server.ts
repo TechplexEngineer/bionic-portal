@@ -1,11 +1,12 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
+import { getLoginUrl } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
-		return redirect(302, "/login");
+		return redirect(302, getLoginUrl(event.url));
 	}
 
 	const db = event.locals.db;
