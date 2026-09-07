@@ -136,7 +136,7 @@
 					{data.membersHere.length}
 				</span>
 			</div>
-			<TableForObjectArray data={data.membersHere} columns={hereColumns} />
+			<TableForObjectArray data={data.membersHere} columns={hereColumns} searchable={false} />
 		</div>
 		<div class="col">
 			<div class="overflow-y-auto" style="max-height: 50vh;">
