@@ -42,7 +42,6 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-CI=true npm run db:migrate:local
 echo "Waiting for the dev server to become available..."
 until curl --silent --output /dev/null "$APP_URL"; do
   if ! kill -0 "$DEV_PID" 2>/dev/null; then
