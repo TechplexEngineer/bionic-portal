@@ -10,10 +10,9 @@ function requireLogin(url: URL) {
 		return redirect(302, getLoginUrl(url));
 	}
 
-	// @todo: enforce admin role
-	// if (locals.user.role != "admin") {
-	// 	return redirect(302, "/login");
-	// }
+	if (locals.user.role !== "admin") {
+		return redirect(302, "/dashboard");
+	}
 
 	return locals.user;
 }
