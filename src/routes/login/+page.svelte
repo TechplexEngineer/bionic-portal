@@ -13,6 +13,9 @@
 			<div class="card shadow-sm p-4">
 				<h1 class="h3 text-center">Bionic Portal</h1>
 				<p class="text-center text-body-secondary">Sign in with an email magic link.</p>
+				<p class="text-center text-body-secondary">
+					Please use <a href="http://billericak12.com">billericak12.com email addresses</a>.
+				</p>
 				{#if form?.message}
 					<div class={form.success ? "alert alert-success" : "alert alert-danger"} role="status">
 						{form.message}
