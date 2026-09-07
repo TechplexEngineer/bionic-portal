@@ -55,6 +55,31 @@
 						>
 					</li>
 				{/each}
+				{#if !!user}
+					<li class="nav-item">
+						<a
+							class="nav-link {$page.url.pathname === '/dashboard' ? 'active' : ''}"
+							aria-current="page"
+							href="/dashboard">Dashboard</a
+						>
+					</li>
+					{#if user.role === "admin"}
+						<li class="nav-item dropdown">
+							<a
+								class="nav-link dropdown-toggle {$page.url.pathname.startsWith('/admin')
+									? 'active'
+									: ''}"
+								href="#admin-menu"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false">Admin</a
+							>
+							<ul class="dropdown-menu" id="admin-menu">
+								<li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
+							</ul>
+						</li>
+					{/if}
+				{/if}
 			</ul>
 		</div>
 
@@ -81,7 +106,6 @@
 						<li>
 							<a class="dropdown-item" href="https://gravatar.com" target="_blank">Edit Avatar</a>
 						</li>
-						<li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
 						<li><hr class="dropdown-divider" /></li>
 						<li>
 							<form method="POST" action="/logout">

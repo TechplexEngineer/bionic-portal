@@ -9,3 +9,16 @@ describe("Header user menu", () => {
 		expect(headerMarkup).toMatch(/class="dropdown-menu dropdown-menu-end text-small"/);
 	});
 });
+
+describe("Header authenticated navigation", () => {
+	it("renders the dashboard link in the main navbar for logged-in users", () => {
+		expect(headerMarkup).toMatch(
+			/\{#if !!user\}[\s\S]*class="nav-link[^"]*"[\s\S]*href="\/dashboard"/
+		);
+	});
+
+	it("renders an admin dropdown containing the admin dashboard", () => {
+		expect(headerMarkup).toMatch(/user\.role === "admin"/);
+		expect(headerMarkup).toMatch(/href="\/admin"[^>]*>Admin Dashboard<\/a>/);
+	});
+});
