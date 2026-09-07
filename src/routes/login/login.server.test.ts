@@ -42,6 +42,38 @@ describe("magic-link routes", () => {
 		input.url = new URL("https://portal.example.org/login/verify");
 		return input as unknown as Parameters<NonNullable<typeof verification.default>>[0];
 	}
+	it("logs in directly in development, normalizes the email, and preserves the return path", async () => {
+		sqlite
+			.prepare("INSERT INTO user VALUES (?, ?, ?, ?)")
+			.run("admin-id", "Person@Example.org", "existing", "admin");
+		const input = event({ email: " Person@Example.org ", next: "https://evil.example/phishing" });
+
+		await expect(actions.devLogin!(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/dashboard"
+		});
+		expect(input.cookies.set).toHaveBeenCalled();
+		expect(sqlite.prepare("SELECT role FROM user").get().role).toBe("admin");
+		expect(sqlite.prepare("SELECT user_id FROM session").get().user_id).toBe("admin-id");
+	});
+	it("creates a regular user for a new development login", async () => {
+		await expect(
+			actions.devLogin!(event({ email: "new@example.org", next: "/attend?event=42" }))
+		).rejects.toMatchObject({
+			status: 303,
+			location: "/attend?event=42"
+		});
+		expect(sqlite.prepare("SELECT username, role FROM user").get()).toEqual({
+			username: "new@example.org",
+			role: "user"
+		});
+	});
+	it("rejects malformed development login emails", async () => {
+		expect(await actions.devLogin!(event({ email: "not-an-email" }))).toMatchObject({
+			status: 400
+		});
+		expect(sqlite.prepare("SELECT count(*) AS count FROM session").get().count).toBe(0);
+	});
 	it("uses platform credentials and normalizes email", async () => {
 		const result = await actions.requestLink!(event({ email: " Person@Example.org " }));
 		expect(result).toMatchObject({ success: true, email: "person@example.org" });

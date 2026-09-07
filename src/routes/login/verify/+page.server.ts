@@ -1,7 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { sql } from "drizzle-orm";
 import * as auth from "$lib/server/auth";
-import { user } from "$lib/server/db/schema";
+import { findOrCreateUserByEmail } from "$lib/server/emailAuth";
 import { consumeMagicLink, isMagicLinkToken } from "$lib/server/magicLinks";
 import type { Actions, PageServerLoad } from "./$types";
 import { getSafeReturnPath } from "$lib/server/authRedirect";
@@ -23,31 +22,11 @@ export const actions: Actions = {
 		const email = await consumeMagicLink(db, formData.get("token"));
 		if (!email)
 			return fail(400, { message: "This sign-in link is invalid or expired. Request a new link." });
-		const matches = await db
-			.select()
-			.from(user)
-			.where(sql`lower(trim(${user.username})) = ${email}`)
-			.limit(2);
-		if (matches.length > 1)
+		const result = await findOrCreateUserByEmail(db, email);
+		if (result.ambiguous || !result.user)
 			return fail(400, { message: "Unable to sign in. Please contact your administrator." });
-		let [existingUser] = matches;
-		if (!existingUser) {
-			await db
-				.insert(user)
-				.values({
-					id: crypto.randomUUID(),
-					username: email,
-					passwordHash: "MAGIC_LINK_ONLY",
-					role: "user"
-				})
-				.onConflictDoNothing({ target: user.username });
-			[existingUser] = await db
-				.select()
-				.from(user)
-				.where(sql`lower(trim(${user.username})) = ${email}`);
-		}
 		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id, db);
+		const session = await auth.createSession(sessionToken, result.user.id, db);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		redirect(303, next);
 	}

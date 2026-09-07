@@ -2,7 +2,10 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { sendMagicLink } from "$lib/server/brevo";
 import { issueMagicLink, revokeMagicLink } from "$lib/server/magicLinks";
+import { findOrCreateUserByEmail } from "$lib/server/emailAuth";
+import * as auth from "$lib/server/auth";
 import { env } from "$env/dynamic/private";
+import { dev } from "$app/environment";
 import { getSafeReturnPath } from "$lib/server/authRedirect";
 
 export const load: PageServerLoad = async (event) => {
@@ -12,6 +15,27 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
+	devLogin: async (event) => {
+		if (!dev) return fail(404, { message: "Not found" });
+
+		const formData = await event.request.formData();
+		const rawNext = formData.get("next");
+		const next = getSafeReturnPath(typeof rawNext === "string" ? rawNext : null);
+		const rawEmail = formData.get("email");
+		const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+		if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			return fail(400, { message: "Enter a valid email address." });
+		}
+
+		const result = await findOrCreateUserByEmail(event.locals.db, email);
+		if (result.ambiguous || !result.user) {
+			return fail(400, { message: "Unable to sign in. Please contact your administrator." });
+		}
+		const sessionToken = auth.generateSessionToken();
+		const session = await auth.createSession(sessionToken, result.user.id, event.locals.db);
+		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		redirect(303, next);
+	},
 	requestLink: async (event) => {
 		const formData = await event.request.formData();
 		const rawNext = formData.get("next");

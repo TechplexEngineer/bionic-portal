@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import { dev } from "$app/environment";
 	import type { ActionData, PageData } from "./$types";
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let requesting = $state(false);
@@ -12,7 +13,11 @@
 		<div class="col-12 col-md-7 col-lg-5">
 			<div class="card shadow-sm p-4">
 				<h1 class="h3 text-center">Bionic Portal</h1>
-				<p class="text-center text-body-secondary">Sign in with an email magic link.</p>
+				{#if dev}
+					<p class="text-center text-body-secondary">Development login</p>
+				{:else}
+					<p class="text-center text-body-secondary">Sign in with an email magic link.</p>
+				{/if}
 				<p class="text-center text-body-secondary">
 					Use a <strong>billericak12.com</strong> email address.
 				</p>
@@ -21,7 +26,7 @@
 						{form.message}
 					</div>
 				{/if}
-				{#if form?.success}
+				{#if form?.success && !dev}
 					<p>
 						Check your inbox for <strong>{form.email}</strong>. Your link expires in 15 minutes.
 						Check your spam folder if it does not arrive.
@@ -29,7 +34,7 @@
 				{/if}
 				<form
 					method="post"
-					action="?/requestLink"
+					action={dev ? "?/devLogin" : "?/requestLink"}
 					use:enhance={() => {
 						requesting = true;
 						return async ({ update }) => {
@@ -57,11 +62,15 @@
 						/>
 					</div>
 					<button class="btn btn-primary w-100" type="submit" disabled={requesting}>
-						{requesting
-							? "Sending link…"
-							: form?.success
-								? "Send another sign-in link"
-								: "Send sign-in link"}
+						{dev
+							? requesting
+								? "Signing in…"
+								: "Log in"
+							: requesting
+								? "Sending link…"
+								: form?.success
+									? "Send another sign-in link"
+									: "Send sign-in link"}
 					</button>
 				</form>
 			</div>
