@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from "./$types";
-import { students, attendance, shopLocations } from "$lib/server/db/schema";
+import { attendance, shopLocations } from "$lib/server/db/schema";
 import { asc } from "drizzle-orm";
 import { sortEventsByStartDate } from "$lib/server/eventSorting";
 
@@ -13,12 +13,15 @@ export const load = (async ({ locals }) => {
 			}
 		}
 	});
+	const lastYear = String(new Date().getFullYear() - 1);
 
-	const members = membersResult.map((m) => ({
-		id: m.userid,
-		name: `${m.firstName} ${m.lastName}`,
-		here: m.attendance.length > 0
-	}));
+	const members = membersResult
+		.filter((m) => !m.hidden && m.graduationYear !== lastYear)
+		.map((m) => ({
+			id: m.userid,
+			name: `${m.firstName} ${m.lastName}`,
+			here: m.attendance.length > 0
+		}));
 
 	const eventResult = await locals.db.query.events.findMany();
 	const locations = await locals.db
