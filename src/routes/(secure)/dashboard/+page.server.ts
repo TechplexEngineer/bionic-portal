@@ -27,6 +27,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				startDate: string;
 				endDate: string;
 				cost: number;
+				forms: { id: string; name: string; completed: boolean }[];
 			}[];
 		}[] = [];
 
@@ -65,7 +66,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 							eventName: eventData.name,
 							startDate: eventData.startDate,
 							endDate: eventData.endDate,
-							cost: eventData.cost
+							cost: eventData.cost,
+							forms: []
 						};
 					})
 				});
@@ -86,6 +88,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				endDate: string;
 				cost: number;
 				permissionFormUrl: string | undefined;
+				forms: { id: string; name: string; completed: boolean }[];
 			}[],
 			actionItems: [] as {
 				id: string;
@@ -98,6 +101,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				endDate: string;
 				cost: number;
 				permissionFormUrl: string | undefined;
+				forms: { id: string; name: string; completed: boolean }[];
 			}[],
 			studentsWithRegs
 		};
@@ -121,13 +125,48 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(table.eventRegistrations)
 		.innerJoin(table.events, eq(table.eventRegistrations.eventId, table.events.id))
 		.where(eq(table.eventRegistrations.studentId, user.username));
+	const eventForms = await db.select().from(table.eventForms);
+	const completedForms = registrations.length
+		? await db
+				.select({
+					registrationId: table.eventFormSubmissions.registrationId,
+					eventFormId: table.eventFormSubmissions.eventFormId
+				})
+				.from(table.eventFormSubmissions)
+				.where(
+					inArray(
+						table.eventFormSubmissions.registrationId,
+						registrations.map((registration) => registration.id)
+					)
+				)
+		: [];
 
 	const now = new Date();
 	const upcomingRegistrations = registrations
 		.map((r) => ({
 			id: r.id,
 			paid: r.paid,
-			formCompleted: r.formCompleted,
+			formCompleted:
+				eventForms.filter((eventForm) => eventForm.eventId === r.eventId).length > 0
+					? eventForms
+							.filter((eventForm) => eventForm.eventId === r.eventId)
+							.every((eventForm) =>
+								completedForms.some(
+									(submission) =>
+										submission.registrationId === r.id && submission.eventFormId === eventForm.id
+								)
+							)
+					: r.formCompleted,
+			forms: eventForms
+				.filter((eventForm) => eventForm.eventId === r.eventId)
+				.map((eventForm) => ({
+					id: eventForm.id,
+					name: eventForm.name,
+					completed: completedForms.some(
+						(submission) =>
+							submission.registrationId === r.id && submission.eventFormId === eventForm.id
+					)
+				})),
 			invoicePaymentLink: r.invoicePaymentLink,
 			eventId: r.eventId,
 			eventName: (r.eventData as table.EventData).name,

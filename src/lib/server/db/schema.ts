@@ -152,6 +152,20 @@ export const eventInsertSchema = createInsertSchema(events, {
 export type EventInsert = z.infer<typeof eventInsertSchema>;
 
 // ----------------------------------------------------------------------------
+// Event Forms Table
+// ----------------------------------------------------------------------------
+export const eventForms = sqliteTable("event_forms", {
+	id: text("id").primaryKey(),
+	eventId: text("event_id")
+		.notNull()
+		.references(() => events.id),
+	name: text("name").notNull(),
+	basePdfKey: text("base_pdf_key").notNull(),
+	definition: text("definition", { mode: "json" }).notNull()
+});
+export type EventForm = typeof eventForms.$inferSelect;
+
+// ----------------------------------------------------------------------------
 // Event Registrations Table
 // ----------------------------------------------------------------------------
 export const eventRegistrations = sqliteTable("event_registrations", {
@@ -168,6 +182,27 @@ export const eventRegistrations = sqliteTable("event_registrations", {
 	invoicePaymentLink: text("invoice_payment_link") // QuickBooks invoice payment link
 });
 
+// One row per completed event form. The signed PDF and field values are kept
+// in R2/D1 respectively so an admin can audit and export each submission.
+export const eventFormSubmissions = sqliteTable(
+	"event_form_submissions",
+	{
+		id: text("id").primaryKey(),
+		registrationId: text("registration_id")
+			.notNull()
+			.references(() => eventRegistrations.id),
+		eventFormId: text("event_form_id")
+			.notNull()
+			.references(() => eventForms.id),
+		signedPdfKey: text("signed_pdf_key").notNull(),
+		values: text("values", { mode: "json" }).notNull(),
+		completedAt: integer("completed_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`)
+	},
+	(table) => [unique("event_form_submission_unique").on(table.registrationId, table.eventFormId)]
+);
+
 export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
 	student: one(students, {
 		fields: [eventRegistrations.studentId],
@@ -176,6 +211,22 @@ export const eventRegistrationsRelations = relations(eventRegistrations, ({ one 
 	event: one(events, {
 		fields: [eventRegistrations.eventId],
 		references: [events.id]
+	})
+}));
+
+export const eventFormsRelations = relations(eventForms, ({ one, many }) => ({
+	event: one(events, { fields: [eventForms.eventId], references: [events.id] }),
+	submissions: many(eventFormSubmissions)
+}));
+
+export const eventFormSubmissionsRelations = relations(eventFormSubmissions, ({ one }) => ({
+	registration: one(eventRegistrations, {
+		fields: [eventFormSubmissions.registrationId],
+		references: [eventRegistrations.id]
+	}),
+	eventForm: one(eventForms, {
+		fields: [eventFormSubmissions.eventFormId],
+		references: [eventForms.id]
 	})
 }));
 

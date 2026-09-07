@@ -12,6 +12,7 @@ declare global {
 				QUICKBOOKS_CLIENT_SECRET: string;
 				QUICKBOOKS_COMPANY_ID: string;
 				QUICKBOOKS_API_BASE: string;
+				FORMS_BUCKET: R2Bucket;
 			};
 			cf: CfProperties;
 			ctx: ExecutionContext;

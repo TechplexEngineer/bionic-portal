@@ -1,0 +1,10 @@
+import type { FieldRect, FormDefinition, FormField } from '../types.js';
+export declare const MIN_FIELD_SIZE = 0.02;
+export declare function constrainFieldRect(rect: FieldRect): FieldRect;
+export declare function constrainMovedFieldRect(rect: FieldRect): FieldRect;
+export declare function addField(definition: FormDefinition, type: FormField['type'], page: number, rect?: FieldRect): FormDefinition;
+export declare function renameField(definition: FormDefinition, id: string, name: string): FormDefinition;
+export declare function updateFieldRect(definition: FormDefinition, id: string, rect: FieldRect): FormDefinition;
+export declare function toggleRequired(definition: FormDefinition, id: string): FormDefinition;
+export declare function updateDropdownOptions(definition: FormDefinition, id: string, options: string[]): FormDefinition;
+export declare function deleteField(definition: FormDefinition, id: string): FormDefinition;

@@ -90,6 +90,10 @@ export const actions: Actions = {
 		if (existing) {
 			return fail(400, { message: "You are already registered for this event" });
 		}
+		const eventForms = await db
+			.select({ id: table.eventForms.id })
+			.from(table.eventForms)
+			.where(eq(table.eventForms.eventId, eventId));
 
 		// 3. Register
 		try {
@@ -99,7 +103,7 @@ export const actions: Actions = {
 				studentId: user.username,
 				// No payment or permission-form action is needed when the event does not require it.
 				paid: eventData.data.cost <= 0,
-				formCompleted: !eventData.data.permissionFormUrl
+				formCompleted: eventForms.length === 0 && !eventData.data.permissionFormUrl
 			});
 		} catch (e) {
 			console.error("Failed to register:", e);

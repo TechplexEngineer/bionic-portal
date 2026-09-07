@@ -37,6 +37,9 @@ function registrationAction({
 		}))
 		.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => (existingRegistration ? [existingRegistration] : []) })
+		}))
+		.mockImplementationOnce(() => ({
+			from: () => ({ where: async () => [] })
 		}));
 	const values = vi.fn().mockResolvedValue(undefined);
 	const db = {

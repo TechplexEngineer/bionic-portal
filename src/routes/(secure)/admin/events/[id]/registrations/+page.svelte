@@ -35,6 +35,15 @@
 			<p class="text-muted mb-0">{data.event.name} • {data.event.startDate}</p>
 		</div>
 		<div class="d-flex gap-2">
+			<a href="/admin/events/{data.event.id}/registrations/roster" class="btn btn-outline-success"
+				><i class="fa fa-download me-1"></i> Roster CSV</a
+			>
+			<a href="/admin/events/{data.event.id}/registrations/forms" class="btn btn-outline-success"
+				><i class="fa fa-file-pdf me-1"></i> Signed Forms ZIP</a
+			>
+			<a href="/admin/events/{data.event.id}/forms" class="btn btn-outline-primary"
+				><i class="fa fa-pencil me-1"></i> Forms</a
+			>
 			{#if data.registrations.some((r) => !r.invoiceId)}
 				<form
 					method="post"
@@ -122,6 +131,12 @@
 					{/if}
 				</form>
 			</div>
+		</div>
+	{/if}
+	{#if data.registrationClosed}
+		<div class="alert alert-warning">
+			<i class="fa fa-clock me-2"></i>Registration is closed. The admin-only manual registration
+			tool above remains available for late additions.
 		</div>
 	{/if}
 
@@ -242,30 +257,42 @@
 										</form>
 									</td>
 									<td>
-										<form
-											method="post"
-											action="?/toggleForm"
-											use:enhance={() => {
-												updating = true;
-												return async ({ update }) => {
-													await update();
-													updating = false;
-												};
-											}}
-										>
-											<input type="hidden" name="id" value={reg.id} />
-											<input type="hidden" name="formCompleted" value={reg.formCompleted} />
-											<button
-												type="submit"
-												class="btn btn-sm rounded-pill px-3 {reg.formCompleted
-													? 'btn-info-subtle text-info border-info-subtle'
-													: 'btn-warning-subtle text-warning border-warning-subtle'} fw-bold"
-												disabled={updating}
-												style="font-size: 0.7rem;"
+										{#if data.forms.length > 0}
+											<div class="d-flex flex-column gap-1">
+												{#each data.forms as eventForm}
+													{@const status = data.formsByRegistration[reg.id]?.find(
+														(item) => item.id === eventForm.id
+													)}
+													<span class="small {status?.completed ? 'text-success' : 'text-warning'}"
+														>{status?.completed ? "✓" : "○"} {eventForm.name}</span
+													>
+												{/each}
+											</div>
+										{:else}
+											<form
+												method="post"
+												action="?/toggleForm"
+												use:enhance={() => {
+													updating = true;
+													return async ({ update }) => {
+														await update();
+														updating = false;
+													};
+												}}
 											>
-												{reg.formCompleted ? "DONE" : "PENDING"}
-											</button>
-										</form>
+												<input type="hidden" name="id" value={reg.id} />
+												<input type="hidden" name="formCompleted" value={reg.formCompleted} />
+												<button
+													type="submit"
+													class="btn btn-sm rounded-pill px-3 {reg.formCompleted
+														? 'btn-info-subtle text-info border-info-subtle'
+														: 'btn-warning-subtle text-warning border-warning-subtle'} fw-bold"
+													disabled={updating}
+													style="font-size: 0.7rem;"
+													>{reg.formCompleted ? "DONE" : "PENDING"}</button
+												>
+											</form>
+										{/if}
 									</td>
 									<td>
 										{#if reg.invoiceId}
