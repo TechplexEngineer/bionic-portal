@@ -1,6 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { shopLocations, students } from "./schema";
+import { eventFormSubmissions, eventForms, shopLocations, students } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 
 const studentProfileRepairMigration = readFileSync(
@@ -32,5 +32,14 @@ describe("Database Schema tests", () => {
 		const columns = getTableColumns(shopLocations);
 		expect(columns).toHaveProperty("location");
 		expect(columns).toHaveProperty("item");
+	});
+
+	it("event forms keep R2 documents separate from definitions and submissions", () => {
+		expect(getTableColumns(eventForms)).toEqual(
+			expect.objectContaining({ basePdfKey: expect.anything(), definition: expect.anything() })
+		);
+		expect(getTableColumns(eventFormSubmissions)).toEqual(
+			expect.objectContaining({ signedPdfKey: expect.anything(), values: expect.anything() })
+		);
 	});
 });

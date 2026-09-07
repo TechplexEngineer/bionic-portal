@@ -1,0 +1,180 @@
+import { createRawSnippet } from 'svelte';
+import { page } from 'vitest/browser';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from 'vitest-browser-svelte';
+import PdfViewer from './PdfViewer.svelte';
+const pdfMocks = vi.hoisted(() => ({
+    getPdfJs: vi.fn(),
+    loadPdfBytes: vi.fn()
+}));
+vi.mock('../pdf/runtime.js', () => ({ getPdfJs: pdfMocks.getPdfJs }));
+vi.mock('../pdf/source.js', () => ({ loadPdfBytes: pdfMocks.loadPdfBytes }));
+function deferred() {
+    let resolve;
+    let reject;
+    const promise = new Promise((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
+function createPdfPage(pageNumber, renderPromise = Promise.resolve()) {
+    const cancel = vi.fn();
+    const render = vi.fn(() => ({ promise: renderPromise, cancel }));
+    const getViewport = vi.fn(({ scale }) => ({
+        width: pageNumber * 100 * scale,
+        height: pageNumber * 150 * scale
+    }));
+    return {
+        cancel,
+        getViewport,
+        page: { getViewport, render },
+        render
+    };
+}
+function createPdfDocument(pages) {
+    const getPage = vi.fn((pageNumber) => Promise.resolve(pages[pageNumber - 1].page));
+    const document = {
+        getPage,
+        numPages: pages.length
+    };
+    return { document, getPage };
+}
+function usePdfDocument(document) {
+    const destroy = vi.fn(() => Promise.resolve());
+    const getDocument = vi.fn(() => ({ destroy, promise: Promise.resolve(document) }));
+    pdfMocks.getPdfJs.mockResolvedValue({ getDocument });
+    return { destroy, getDocument };
+}
+describe('PdfViewer', () => {
+    beforeEach(() => {
+        pdfMocks.getPdfJs.mockReset();
+        pdfMocks.loadPdfBytes.mockReset();
+        pdfMocks.loadPdfBytes.mockResolvedValue(new Uint8Array([7, 8, 9]));
+    });
+    it('shows an accessible loading state while the source is loading', async () => {
+        const loading = deferred();
+        pdfMocks.loadPdfBytes.mockReturnValue(loading.promise);
+        render(PdfViewer, { source: new Uint8Array([1]) });
+        await expect.element(page.getByRole('status')).toHaveTextContent('Loading PDF');
+        loading.resolve(new Uint8Array([1]));
+    });
+    it('renders one canvas per page, passes overlay dimensions, and rerenders for zoom changes', async () => {
+        const pages = [createPdfPage(1), createPdfPage(2)];
+        const pdfDocument = createPdfDocument(pages);
+        usePdfDocument(pdfDocument.document);
+        const source = new Uint8Array([1]);
+        const onoverlay = vi.fn();
+        const overlay = createRawSnippet((context) => {
+            const value = context();
+            onoverlay(value);
+            return { render: () => `<span data-page-overlay="${value.page}"></span>` };
+        });
+        const result = render(PdfViewer, {
+            source,
+            zoom: 1.5,
+            overlay
+        });
+        await expect.element(page.getByLabelText('PDF page 2')).toBeVisible();
+        expect(result.container.querySelectorAll('canvas')).toHaveLength(2);
+        expect(onoverlay).toHaveBeenCalledWith({ page: 1, width: 150, height: 225 });
+        expect(onoverlay).toHaveBeenCalledWith({ page: 2, width: 300, height: 450 });
+        await result.rerender({ source, zoom: 2, overlay });
+        await vi.waitFor(() => expect(pages[0].getViewport).toHaveBeenCalledWith({ scale: 2 }));
+        expect(pages[1].getViewport).toHaveBeenCalledWith({ scale: 2 });
+    });
+    it('cancels loading, document, and page rendering when the source is replaced', async () => {
+        const firstRender = deferred();
+        const firstPage = createPdfPage(1, firstRender.promise);
+        const secondPage = createPdfPage(1);
+        const firstDocument = createPdfDocument([firstPage]);
+        const secondDocument = createPdfDocument([secondPage]);
+        const firstLoadingDestroy = vi.fn(() => Promise.resolve());
+        const secondLoadingDestroy = vi.fn(() => Promise.resolve());
+        const getDocument = vi
+            .fn()
+            .mockReturnValueOnce({
+            destroy: firstLoadingDestroy,
+            promise: Promise.resolve(firstDocument.document)
+        })
+            .mockReturnValueOnce({
+            destroy: secondLoadingDestroy,
+            promise: Promise.resolve(secondDocument.document)
+        });
+        pdfMocks.getPdfJs.mockResolvedValue({ getDocument });
+        const result = render(PdfViewer, { source: new Uint8Array([1]), zoom: 1 });
+        await expect.element(page.getByLabelText('PDF page 1')).toBeVisible();
+        await vi.waitFor(() => expect(firstPage.render).toHaveBeenCalledOnce());
+        const firstSignal = pdfMocks.loadPdfBytes.mock.calls[0][1]?.signal;
+        await result.rerender({ source: new Uint8Array([2]), zoom: 1 });
+        await vi.waitFor(() => expect(getDocument).toHaveBeenCalledTimes(2));
+        expect(firstSignal.aborted).toBe(true);
+        expect(firstLoadingDestroy).toHaveBeenCalledOnce();
+        expect(firstPage.cancel).toHaveBeenCalled();
+        firstRender.resolve();
+    });
+    it('reports a load failure and recovers when a valid source replaces it', async () => {
+        const goodPage = createPdfPage(1);
+        const goodDocument = createPdfDocument([goodPage]);
+        usePdfDocument(goodDocument.document);
+        pdfMocks.loadPdfBytes
+            .mockRejectedValueOnce(new Error('The PDF is unavailable'))
+            .mockResolvedValueOnce(new Uint8Array([2]));
+        const onerror = vi.fn();
+        const result = render(PdfViewer, { source: new Uint8Array([1]), onerror });
+        await expect.element(page.getByRole('alert')).toHaveTextContent('The PDF is unavailable');
+        expect(onerror).toHaveBeenCalledWith(expect.any(Error));
+        await result.rerender({ source: new Uint8Array([2]), onerror });
+        await expect.element(page.getByLabelText('PDF page 1')).toBeVisible();
+        await expect.element(page.getByRole('alert')).not.toBeInTheDocument();
+    });
+    it.each([
+        ['InvalidPDFException', 'pdf-parse'],
+        ['PasswordException', 'pdf-encrypted']
+    ])('maps a PDF.js %s to %s', async (name, code) => {
+        const cause = Object.assign(new Error('PDF.js rejected the document'), { name });
+        const destroy = vi.fn(() => Promise.resolve());
+        pdfMocks.getPdfJs.mockResolvedValue({
+            getDocument: vi.fn(() => ({ destroy, promise: Promise.reject(cause) }))
+        });
+        const onerror = vi.fn();
+        render(PdfViewer, { source: new Uint8Array([1]), onerror });
+        await expect.element(page.getByRole('alert')).toBeVisible();
+        await vi.waitFor(() => expect(onerror).toHaveBeenCalledOnce());
+        expect(onerror).toHaveBeenCalledWith(expect.objectContaining({ code, cause }));
+    });
+    it('rejects a permission-restricted PDF with a stable typed error', async () => {
+        const pages = [createPdfPage(1)];
+        const pdfDocument = createPdfDocument(pages);
+        const getPermissions = vi.fn(() => Promise.resolve([]));
+        Object.assign(pdfDocument.document, { getPermissions });
+        const getDocument = vi.fn(() => ({
+            destroy: vi.fn(() => Promise.resolve()),
+            promise: Promise.resolve(pdfDocument.document)
+        }));
+        pdfMocks.getPdfJs.mockResolvedValue({
+            getDocument,
+            PermissionFlag: { MODIFY_CONTENTS: 8 }
+        });
+        const onerror = vi.fn();
+        render(PdfViewer, { source: new Uint8Array([1]), onerror });
+        await expect.element(page.getByRole('alert')).toBeVisible();
+        await vi.waitFor(() => expect(onerror).toHaveBeenCalledOnce());
+        expect(onerror).toHaveBeenCalledWith(expect.objectContaining({ code: 'pdf-permission' }));
+    });
+    it('renders only the current page and its neighbors in a long document', async () => {
+        const pdfPages = Array.from({ length: 100 }, (_, index) => createPdfPage(index + 1));
+        const pdfDocument = createPdfDocument(pdfPages);
+        usePdfDocument(pdfDocument.document);
+        const source = new Uint8Array([1]);
+        const result = render(PdfViewer, { source, currentPage: 1 });
+        await expect.element(page.getByLabelText('PDF page 2')).toBeVisible();
+        expect(result.container.querySelectorAll('canvas')).toHaveLength(2);
+        expect(pdfDocument.getPage.mock.calls.map(([number]) => number)).toEqual([1, 2]);
+        await result.rerender({ source, currentPage: 50 });
+        await expect.element(page.getByLabelText('PDF page 50')).toBeVisible();
+        expect(result.container.querySelectorAll('canvas')).toHaveLength(3);
+        expect(pdfDocument.getPage.mock.calls.map(([number]) => number)).toEqual([1, 2, 49, 50, 51]);
+        await expect.element(page.getByLabelText('PDF page 1')).not.toBeInTheDocument();
+    });
+});

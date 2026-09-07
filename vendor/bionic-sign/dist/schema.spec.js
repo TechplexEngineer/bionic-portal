@@ -1,0 +1,146 @@
+import { describe, expect, it } from 'vitest';
+import { applyTextPrefill, nextFieldName, validateDefinition } from './schema.js';
+function field(id, name, type = 'text') {
+    return {
+        id,
+        name,
+        type,
+        page: 1,
+        rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.1 },
+        required: true,
+        ...(type === 'dropdown' ? { options: ['Option 1'] } : {})
+    };
+}
+function definitionWithTextAndSignature() {
+    return {
+        version: 1,
+        fields: [
+            field('text-id', 'student_name'),
+            field('signature-id', 'parent_signature', 'signature')
+        ]
+    };
+}
+describe('validateDefinition', () => {
+    it('accepts an empty version-1 definition', () => {
+        expect(validateDefinition({ version: 1, fields: [] })).toEqual({ version: 1, fields: [] });
+    });
+    it('rejects duplicate field names', () => {
+        expect(() => validateDefinition({
+            version: 1,
+            fields: [field('a', 'student'), field('b', 'student')]
+        })).toThrow(/unique/i);
+    });
+    it('rejects duplicate field IDs', () => {
+        expect(() => validateDefinition({
+            version: 1,
+            fields: [field('shared-id', 'student'), field('shared-id', 'guardian')]
+        })).toThrow(/unique/i);
+    });
+    it('rejects empty and malformed field names', () => {
+        expect(() => validateDefinition({ version: 1, fields: [field('a', '')] })).toThrow(/name/i);
+        expect(() => validateDefinition({ version: 1, fields: [field('a', '1student')] })).toThrow(/name/i);
+    });
+    it('rejects rectangles outside a normalized page', () => {
+        const outside = field('a', 'student');
+        outside.rect.x = 0.8;
+        expect(() => validateDefinition({ version: 1, fields: [outside] })).toThrow(/rect/i);
+        const zeroWidth = field('b', 'guardian');
+        zeroWidth.rect.width = 0;
+        expect(() => validateDefinition({ version: 1, fields: [zeroWidth] })).toThrow(/rect/i);
+    });
+    it('rejects pages below one', () => {
+        const invalidPage = field('a', 'student');
+        invalidPage.page = 0;
+        expect(() => validateDefinition({ version: 1, fields: [invalidPage] })).toThrow(/page/i);
+    });
+    it('returns a clone without mutating or retaining input objects', () => {
+        const input = definitionWithTextAndSignature();
+        const parsed = validateDefinition(input);
+        parsed.fields[0].rect.x = 0.5;
+        expect(input.fields[0].rect.x).toBe(0.1);
+        expect(parsed).not.toBe(input);
+        expect(parsed.fields).not.toBe(input.fields);
+    });
+    it('defaults an omitted required value to true', () => {
+        const input = field('a', 'student');
+        const fieldWithoutRequired = {
+            id: input.id,
+            name: input.name,
+            type: input.type,
+            page: input.page,
+            rect: input.rect
+        };
+        expect(validateDefinition({ version: 1, fields: [fieldWithoutRequired] })).toEqual({
+            version: 1,
+            fields: [input]
+        });
+    });
+    it('accepts dropdown fields with independent cloned options', () => {
+        const input = {
+            version: 1,
+            fields: [
+                {
+                    id: 'grade-id',
+                    name: 'grade',
+                    type: 'dropdown',
+                    page: 1,
+                    rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.1 },
+                    required: true,
+                    options: [' Freshman ', 'Sophomore']
+                }
+            ]
+        };
+        const parsed = validateDefinition(input);
+        input.fields[0].options[0] = 'mutated';
+        expect(parsed.fields[0]).toEqual(expect.objectContaining({
+            type: 'dropdown',
+            options: ['Freshman', 'Sophomore']
+        }));
+    });
+    it.each([
+        [[], /option/i],
+        [[''], /empty/i],
+        [['Freshman', 'Freshman'], /unique/i]
+    ])('rejects invalid dropdown options %j', (options, message) => {
+        expect(() => validateDefinition({
+            version: 1,
+            fields: [
+                {
+                    id: 'grade-id',
+                    name: 'grade',
+                    type: 'dropdown',
+                    page: 1,
+                    rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.1 },
+                    required: true,
+                    options
+                }
+            ]
+        })).toThrow(message);
+    });
+});
+describe('nextFieldName', () => {
+    it('generates the first available name for each field type', () => {
+        const fields = [field('a', 'text_2'), field('b', 'signature_2', 'signature')];
+        expect(nextFieldName('text', fields)).toBe('text_1');
+        expect(nextFieldName('signature', fields)).toBe('signature_1');
+    });
+});
+describe('applyTextPrefill', () => {
+    it('prefills text and diagnoses signature prefills', () => {
+        const result = applyTextPrefill(definitionWithTextAndSignature(), {
+            student_name: 'Jordan Lee',
+            parent_signature: 'ignored'
+        });
+        expect(result.values.student_name).toEqual({ type: 'text', value: 'Jordan Lee' });
+        expect(result.diagnostics[0].code).toBe('invalid-prefill-type');
+        expect(result.diagnostics[0].fieldName).toBe('parent_signature');
+    });
+    it('diagnoses unknown prefill keys without creating values', () => {
+        const result = applyTextPrefill(definitionWithTextAndSignature(), { unknown_name: 'ignored' });
+        expect(result.values).toEqual({});
+        expect(result.diagnostics).toEqual([
+            expect.objectContaining({ code: 'unknown-prefill-field', fieldName: 'unknown_name' })
+        ]);
+        expect(Object.getPrototypeOf(result.values)).toBeNull();
+    });
+});

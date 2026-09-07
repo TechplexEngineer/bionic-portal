@@ -33,12 +33,47 @@ export const load: PageServerLoad = async (event) => {
 		.from(table.eventRegistrations)
 		.innerJoin(table.students, eq(table.eventRegistrations.studentId, table.students.userid))
 		.where(eq(table.eventRegistrations.eventId, eventId));
+	const forms = await db
+		.select()
+		.from(table.eventForms)
+		.where(eq(table.eventForms.eventId, eventId));
+	const submissions = await db
+		.select({
+			registrationId: table.eventFormSubmissions.registrationId,
+			eventFormId: table.eventFormSubmissions.eventFormId
+		})
+		.from(table.eventFormSubmissions)
+		.innerJoin(table.eventForms, eq(table.eventFormSubmissions.eventFormId, table.eventForms.id))
+		.where(eq(table.eventForms.eventId, eventId));
+	const submissionKeys = new Set(
+		submissions.map((submission) => `${submission.registrationId}:${submission.eventFormId}`)
+	);
+	const formsByRegistration = Object.fromEntries(
+		registrations.map((registration) => [
+			registration.id,
+			forms.map((eventForm) => ({
+				id: eventForm.id,
+				name: eventForm.name,
+				completed: submissionKeys.has(`${registration.id}:${eventForm.id}`)
+			}))
+		])
+	);
 
 	const totals = {
 		registered: registrations.length,
 		paid: registrations.filter((r) => r.paid).length,
-		formsCompleted: registrations.filter((r) => r.formCompleted).length,
-		eventReady: registrations.filter((r) => r.paid && r.formCompleted).length
+		formsCompleted: registrations.filter((r) =>
+			forms.length
+				? forms.every((eventForm) => submissionKeys.has(`${r.id}:${eventForm.id}`))
+				: r.formCompleted
+		).length,
+		eventReady: registrations.filter(
+			(r) =>
+				r.paid &&
+				(forms.length
+					? forms.every((eventForm) => submissionKeys.has(`${r.id}:${eventForm.id}`))
+					: r.formCompleted)
+		).length
 	};
 
 	const registeredStudentIds = registrations.map((r) => r.student.userid);
@@ -75,7 +110,13 @@ export const load: PageServerLoad = async (event) => {
 		event: { id: eventData.id, ...eventData.data },
 		registrations,
 		totals,
-		unregisteredStudents
+		unregisteredStudents,
+		forms,
+		formsByRegistration,
+		registrationClosed: Boolean(
+			eventData.data.registrationDueDate &&
+			new Date(eventData.data.registrationDueDate) < new Date()
+		)
 	};
 };
 
@@ -274,6 +315,22 @@ export const actions: Actions = {
 			return fail(400, { message: "Student selection is required" });
 		}
 
+		const [student] = await db
+			.select()
+			.from(table.students)
+			.where(eq(table.students.userid, studentId));
+		if (!student) return fail(404, { message: "Student not found" });
+		const [existing] = await db
+			.select()
+			.from(table.eventRegistrations)
+			.where(
+				and(
+					eq(table.eventRegistrations.eventId, eventId),
+					eq(table.eventRegistrations.studentId, studentId)
+				)
+			);
+		if (existing)
+			return fail(400, { message: "This student is already registered for the event." });
 		try {
 			await db.insert(table.eventRegistrations).values({
 				id: crypto.randomUUID(),

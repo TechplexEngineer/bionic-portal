@@ -154,6 +154,13 @@
 										<div class="fw-semibold">{item.eventName}</div>
 										<small class="text-muted">{formatDate(item.startDate)}</small>
 										<div class="d-flex gap-2 mt-1 flex-wrap">
+											{#each item.forms.filter((eventForm) => !eventForm.completed) as eventForm}
+												<a
+													href="/dashboard/forms/{item.id}/{eventForm.id}"
+													class="badge bg-danger text-decoration-none"
+													><i class="fa fa-file-text me-1"></i> Complete {eventForm.name}</a
+												>
+											{/each}
 											{#if !item.formCompleted}
 												{#if item.permissionFormUrl}
 													<a
@@ -224,6 +231,12 @@
 													>{formatDate(reg.startDate)} – {formatDate(reg.endDate)}</small
 												>
 											</div>
+											{#each reg.forms as eventForm}
+												{#if !eventForm.completed}<a
+														href="/dashboard/forms/{reg.id}/{eventForm.id}"
+														class="btn btn-sm btn-outline-primary mt-2">Complete {eventForm.name}</a
+													>{/if}
+											{/each}
 											<div class="d-flex gap-1 flex-wrap justify-content-end">
 												<span class="badge {reg.formCompleted ? 'bg-success' : 'bg-secondary'}">
 													{reg.formCompleted ? "Form ✓" : "Form Pending"}
