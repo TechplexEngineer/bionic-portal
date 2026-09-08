@@ -69,6 +69,19 @@ describe("event form editor server", () => {
 			definition: { version: 1, fields: [] }
 		});
 	});
+
+	it("rejects a parseable but invalid definition without writing", async () => {
+		const db = createDb();
+		const formData = new FormData();
+		formData.set("name", "Permission Form");
+		formData.set("definition", JSON.stringify({}));
+
+		await expect(actions.save(actionInput(formData, db))).resolves.toMatchObject({
+			status: 400,
+			data: { message: "The form definition is invalid." }
+		});
+		expect(db.update).not.toHaveBeenCalled();
+	});
 });
 
 describe("event form editor page", () => {
