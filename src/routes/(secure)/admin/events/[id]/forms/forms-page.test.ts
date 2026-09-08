@@ -16,7 +16,9 @@ describe("event forms list layout", () => {
 		expect(pageMarkup).toContain(
 			"{(savedForm.definition as { fields: unknown[] }).fields.length} fields"
 		);
-		expect(pageMarkup).toContain("resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}`)");
+		expect(pageMarkup).toContain(
+			"resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)"
+		);
 		expect(pageMarkup).toContain(
 			"resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/edit`)"
 		);

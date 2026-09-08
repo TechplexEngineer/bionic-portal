@@ -42,7 +42,7 @@
 							<div class="d-flex gap-2">
 								<a
 									class="btn btn-outline-secondary btn-sm"
-									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}`)}>View</a
+									href={resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/base`)}>View</a
 								>
 								<a
 									class="btn btn-outline-primary btn-sm"
