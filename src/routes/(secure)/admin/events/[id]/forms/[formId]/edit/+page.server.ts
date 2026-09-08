@@ -1,4 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
+import { validateDefinition } from "bionic-sign";
 import { and, eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
@@ -29,9 +30,9 @@ export const actions: Actions = {
 			return fail(400, { message: "A form name and definition are required." });
 		}
 
-		let definition: unknown;
+		let definition;
 		try {
-			definition = JSON.parse(definitionValue);
+			definition = validateDefinition(JSON.parse(definitionValue));
 		} catch {
 			return fail(400, { message: "The form definition is invalid." });
 		}
