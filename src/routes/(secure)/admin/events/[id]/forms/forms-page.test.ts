@@ -4,14 +4,30 @@ import { resolve } from "node:path";
 
 const pageMarkup = readFileSync(resolve(import.meta.dirname, "+page.svelte"), "utf8");
 
-describe("event form creator layout", () => {
-	it("keeps PDF setup above a full-width Bionic Sign designer", () => {
-		const setup = pageMarkup.indexOf('id="base-pdf"');
-		const designer = pageMarkup.indexOf('class="bionic-sign w-100"');
+describe("event forms list layout", () => {
+	it("provides a link to create a form", () => {
+		expect(pageMarkup).toContain("resolve(`/admin/events/${data.event.id}/forms/new`)");
+		expect(pageMarkup).toContain("Create New Form");
+	});
 
-		expect(setup).toBeGreaterThan(-1);
-		expect(designer).toBeGreaterThan(setup);
-		expect(pageMarkup).toContain('class="col-12"');
-		expect(pageMarkup).not.toContain('class="col-lg-8"');
+	it("renders each form with field counts and view/edit links", () => {
+		expect(pageMarkup).toContain("{#each data.forms as savedForm (savedForm.id)}");
+		expect(pageMarkup).toContain("{savedForm.name}");
+		expect(pageMarkup).toContain(
+			"{(savedForm.definition as { fields: unknown[] }).fields.length} fields"
+		);
+		expect(pageMarkup).toContain("resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}`)");
+		expect(pageMarkup).toContain(
+			"resolve(`/admin/events/${data.event.id}/forms/${savedForm.id}/edit`)"
+		);
+		expect(pageMarkup).toContain(">View</a");
+		expect(pageMarkup).toContain(">Edit</a");
+	});
+
+	it("keeps the empty state and removes the embedded creator", () => {
+		expect(pageMarkup).toContain("No forms added yet.");
+		expect(pageMarkup).not.toContain('id="base-pdf"');
+		expect(pageMarkup).not.toContain("PdfFormDesigner");
+		expect(pageMarkup).not.toContain('action="?/save"');
 	});
 });
