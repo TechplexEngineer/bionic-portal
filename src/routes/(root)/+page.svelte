@@ -24,6 +24,9 @@
 			<div class="row">
 				<div class="col">
 					<h3>New Team Member <a href="/register" class="btn btn-primary">Register</a></h3>
+					<p class="mt-2 mb-0">
+						Mentor? <a href="/register/mentor">Complete the mentor registration form</a>.
+					</p>
 				</div>
 				<div class="col">
 					<h3>Returning Member <a href="/login" class="btn btn-primary">Login</a></h3>

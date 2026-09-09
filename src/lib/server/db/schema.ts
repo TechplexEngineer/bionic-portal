@@ -389,3 +389,22 @@ export const parentProfiles = sqliteTable("parent_profiles", {
 	phone: text("phone")
 });
 export type ParentProfile = typeof parentProfiles.$inferSelect;
+
+// ----------------------------------------------------------------------------
+// Mentor Profiles Table
+// ----------------------------------------------------------------------------
+export const mentorProfiles = sqliteTable("mentor_profiles", {
+	userId: text("user_id")
+		.primaryKey()
+		.references(() => user.id),
+	firstName: text("first_name").notNull(),
+	lastName: text("last_name").notNull(),
+	phone: text("phone").notNull(),
+	company: text("company").notNull(),
+	tshirtSize: text("tshirt_size").notNull(),
+	firstAlumni: text("first_alumni").notNull(),
+	yearsMentoring: text("years_mentoring").notNull(),
+	expertise: text("expertise").notNull(),
+	motivation: text("motivation")
+});
+export type MentorProfile = typeof mentorProfiles.$inferSelect;
