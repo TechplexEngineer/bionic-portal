@@ -22,11 +22,11 @@ const event = (overrides: Partial<table.EventData> = {}): table.Events => ({
 
 function registrationAction({
 	eventRecord = event(),
-	studentRecord = { userid: "student@example.com" },
+	studentRecord = { userid: "student@example.com", dateOfBirth: "2010-06-15" },
 	existingRegistration = undefined
 }: {
 	eventRecord?: table.Events;
-	studentRecord?: { userid: string } | null;
+	studentRecord?: { userid: string; dateOfBirth?: string | null } | null;
 	existingRegistration?: object;
 } = {}) {
 	const select = vi
@@ -91,6 +91,18 @@ describe("event registration", () => {
 
 	it("explains that a profile is required instead of leaving the registration form stuck", async () => {
 		const { input, db } = registrationAction({ studentRecord: null });
+
+		expect(await actions.register(input)).toMatchObject({
+			status: 400,
+			data: { message: "Please complete your student profile before registering for an event" }
+		});
+		expect(db.insert).not.toHaveBeenCalled();
+	});
+
+	it("requires a date of birth before registering", async () => {
+		const { input, db } = registrationAction({
+			studentRecord: { userid: "student@example.com", dateOfBirth: null }
+		});
 
 		expect(await actions.register(input)).toMatchObject({
 			status: 400,

@@ -14,7 +14,9 @@ describe("logout route", () => {
 			cookies: {}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0];
 
-		await expect(load!(event)).rejects.toMatchObject({
+		await expect(
+			load!(event as unknown as Parameters<NonNullable<typeof load>>[0])
+		).rejects.toMatchObject({
 			status: 303,
 			location: "/login"
 		});

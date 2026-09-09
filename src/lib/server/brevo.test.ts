@@ -1,9 +1,29 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { sendMagicLink } from "./brevo";
+import { sendMagicLink, sendParentFormInvite } from "./brevo";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Brevo magic links", () => {
+	it("sends a parent form invitation with a safe return link", async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValue(new Response(JSON.stringify({ messageId: "sent" })));
+		vi.stubGlobal("fetch", fetchMock);
+		await sendParentFormInvite(
+			"Parent@example.com",
+			"Alex Student",
+			"Spring Event",
+			"https://portal.example/dashboard/parent/forms/invite-1?token=abc",
+			"test-key"
+		);
+		const request = fetchMock.mock.calls[0][1];
+		const body = JSON.parse(request.body);
+		expect(body.to).toEqual([{ email: "Parent@example.com" }]);
+		expect(body.subject).toContain("Alex Student");
+		expect(body.htmlContent).toContain("Spring Event");
+		expect(body.htmlContent).toContain("dashboard/parent/forms/invite-1");
+	});
+
 	it("sends the sign-in URL with the configured sender and API key", async () => {
 		const fetchMock = vi
 			.fn()

@@ -1,6 +1,12 @@
 import { expect, describe, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { eventFormSubmissions, eventForms, shopLocations, students } from "./schema";
+import {
+	eventFormSubmissions,
+	eventForms,
+	parentFormInvites,
+	shopLocations,
+	students
+} from "./schema";
 import { getTableColumns } from "drizzle-orm";
 
 const studentProfileRepairMigration = readFileSync(
@@ -40,6 +46,30 @@ describe("Database Schema tests", () => {
 		);
 		expect(getTableColumns(eventFormSubmissions)).toEqual(
 			expect.objectContaining({ signedPdfKey: expect.anything(), values: expect.anything() })
+		);
+	});
+
+	it("supports student DOB and parent form workflow columns", () => {
+		expect(getTableColumns(students)).toHaveProperty("dateOfBirth");
+		expect(getTableColumns(eventFormSubmissions)).toEqual(
+			expect.objectContaining({
+				studentValues: expect.anything(),
+				parentValues: expect.anything(),
+				studentCompleted: expect.anything(),
+				parentCompleted: expect.anything(),
+				parentCompletedAt: expect.anything()
+			})
+		);
+		expect(getTableColumns(eventFormSubmissions).signedPdfKey.notNull).toBe(false);
+		expect(getTableColumns(parentFormInvites)).toEqual(
+			expect.objectContaining({
+				id: expect.anything(),
+				submissionId: expect.anything(),
+				email: expect.anything(),
+				code: expect.anything(),
+				expiresAt: expect.anything(),
+				consumedAt: expect.anything()
+			})
 		);
 	});
 });

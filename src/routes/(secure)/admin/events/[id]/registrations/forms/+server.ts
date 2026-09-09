@@ -25,6 +25,7 @@ export const GET: RequestHandler = async ({ locals, platform, params }) => {
 		.where(eq(table.eventRegistrations.eventId, params.id));
 	const zip = new JSZip();
 	for (const row of rows) {
+		if (!row.signedPdfKey) continue;
 		const object = await platform?.env.FORMS_BUCKET.get(row.signedPdfKey);
 		if (object)
 			zip.file(
