@@ -44,10 +44,11 @@ export const students = sqliteTable(
 		intoleranceLevel: text("intolerance_level"), // "cannot_have" | "epi_pen" | "prefer_not"
 		graduationYear: text("graduation_year"),
 		tshirtSize: text("tshirt_size"),
-		customFields: text("custom_fields"), // JSON string for survey expansion
-		currentGrade: text("current_grade"),
-		gender: text("gender"),
-		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
+	customFields: text("custom_fields"), // JSON string for survey expansion
+	currentGrade: text("current_grade"),
+	gender: text("gender"),
+	dateOfBirth: text("date_of_birth"),
+	hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
 	},
 	(table) => [unique("uniqueUserName").on(table.firstName, table.lastName)]
 );
@@ -194,11 +195,18 @@ export const eventFormSubmissions = sqliteTable(
 		eventFormId: text("event_form_id")
 			.notNull()
 			.references(() => eventForms.id),
-		signedPdfKey: text("signed_pdf_key").notNull(),
-		values: text("values", { mode: "json" }).notNull(),
+		signedPdfKey: text("signed_pdf_key"),
+		values: text("values", { mode: "json" }).notNull().default({}),
+		studentValues: text("student_values", { mode: "json" }).notNull().default({}),
+		parentValues: text("parent_values", { mode: "json" }).notNull().default({}),
+		studentCompleted: integer("student_completed", { mode: "boolean" })
+			.notNull()
+			.default(false),
+		parentCompleted: integer("parent_completed", { mode: "boolean" }).notNull().default(false),
 		completedAt: integer("completed_at", { mode: "timestamp" })
 			.notNull()
-			.default(sql`CURRENT_TIMESTAMP`)
+			.default(sql`CURRENT_TIMESTAMP`),
+		parentCompletedAt: integer("parent_completed_at", { mode: "timestamp" })
 	},
 	(table) => [unique("event_form_submission_unique").on(table.registrationId, table.eventFormId)]
 );
@@ -227,6 +235,28 @@ export const eventFormSubmissionsRelations = relations(eventFormSubmissions, ({ 
 	eventForm: one(eventForms, {
 		fields: [eventFormSubmissions.eventFormId],
 		references: [eventForms.id]
+	})
+}));
+
+// One expiring invitation per parent/form workflow attempt. The token itself is never stored.
+export const parentFormInvites = sqliteTable("parent_form_invites", {
+	id: text("id").primaryKey(),
+	submissionId: text("submission_id")
+		.notNull()
+		.references(() => eventFormSubmissions.id),
+	email: text("email").notNull(),
+	code: text("code").notNull().unique(),
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+	consumedAt: integer("consumed_at", { mode: "timestamp_ms" }),
+	createdAt: integer("created_at", { mode: "timestamp_ms" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
+});
+
+export const parentFormInvitesRelations = relations(parentFormInvites, ({ one }) => ({
+	submission: one(eventFormSubmissions, {
+		fields: [parentFormInvites.submissionId],
+		references: [eventFormSubmissions.id]
 	})
 }));
 
