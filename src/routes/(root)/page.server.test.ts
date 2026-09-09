@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { load } from "./+page.server";
+
+const landingMarkup = readFileSync(resolve(import.meta.dirname, "+page.svelte"), "utf8");
 
 describe("landing page load", () => {
 	it("returns events ordered from soonest to latest", async () => {
@@ -25,5 +29,13 @@ describe("landing page load", () => {
 			"Middle event",
 			"Later event"
 		]);
+	});
+});
+
+describe("landing page member registration links", () => {
+	it("renders mentor registration as a matching button in the member options row", () => {
+		expect(landingMarkup).toMatch(
+			/<div class="row">[\s\S]*<div class="col">[\s\S]*New Team Member[\s\S]*<\/div>[\s\S]*<div class="col">[\s\S]*Returning Member[\s\S]*<\/div>[\s\S]*<div class="col">[\s\S]*<h3>Mentor <a href="\/login" class="btn btn-primary">Register<\/a><\/h3>[\s\S]*<\/div>[\s\S]*<\/div>/
+		);
 	});
 });

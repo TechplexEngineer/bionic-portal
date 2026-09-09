@@ -28,10 +28,10 @@
 				<div class="col">
 					<h3>Returning Member <a href="/login" class="btn btn-primary">Login</a></h3>
 				</div>
+				<div class="col">
+					<h3>Mentor <a href="/login" class="btn btn-primary">Register</a></h3>
+				</div>
 			</div>
-			<p class="mt-3 mb-0">
-				Are you a mentor? <a href="/login">Register here</a>
-			</p>
 			<h3>Calendar</h3>
 			<iframe
 				id="calendar-iframe"
