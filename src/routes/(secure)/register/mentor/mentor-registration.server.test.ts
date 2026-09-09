@@ -7,10 +7,7 @@ const validFields = {
 	phone: "555-0100",
 	company: "Bionic Labs",
 	tshirtSize: "L",
-	firstAlumni: "yes",
-	yearsMentoring: "5 years",
-	expertise: "Programming and CAD",
-	motivation: "Give back to students"
+	firstAlumni: "yes"
 };
 
 function event(fields: Record<string, string> = validFields) {
@@ -51,20 +48,26 @@ describe("mentor registration", () => {
 		});
 	});
 
-	it("saves the mentor profile and promotes a new user to mentor", async () => {
+	it("saves registration details and promotes a new user to mentor", async () => {
 		const { input, values, set } = event();
 
 		expect(await actions.default(input)).toEqual({
 			success: true,
 			message: "Mentor profile saved successfully!"
 		});
-		expect(values).toHaveBeenCalledWith(
-			expect.objectContaining({ company: "Bionic Labs", firstAlumni: "yes" })
-		);
+		expect(values).toHaveBeenCalledWith({
+			userId: "user-1",
+			firstName: "Alex",
+			lastName: "Mentor",
+			phone: "555-0100",
+			company: "Bionic Labs",
+			tshirtSize: "L",
+			firstAlumni: "yes"
+		});
 		expect(set).toHaveBeenCalledWith({ role: "mentor" });
 	});
 
-	it("rejects incomplete mentor-specific fields before writing", async () => {
+	it("rejects incomplete registration fields before writing", async () => {
 		const { input, values } = event({ ...validFields, company: "" });
 
 		expect(await actions.default(input)).toMatchObject({

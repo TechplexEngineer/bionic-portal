@@ -430,9 +430,6 @@ export const mentorProfiles = sqliteTable("mentor_profiles", {
 	phone: text("phone").notNull(),
 	company: text("company").notNull(),
 	tshirtSize: text("tshirt_size").notNull(),
-	firstAlumni: text("first_alumni").notNull(),
-	yearsMentoring: text("years_mentoring").notNull(),
-	expertise: text("expertise").notNull(),
-	motivation: text("motivation")
+	firstAlumni: text("first_alumni").notNull()
 });
 export type MentorProfile = typeof mentorProfiles.$inferSelect;
