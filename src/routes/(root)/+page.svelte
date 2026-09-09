@@ -21,15 +21,30 @@
 
 	<div class="row g-4 align-items-start">
 		<div class="col-md-8">
-			<div class="row">
-				<div class="col">
-					<h3>New Team Member <a href="/register" class="btn btn-primary">Register</a></h3>
+			<div class="row g-4 mb-4">
+				<div class="col-md-4">
+					<div class="card h-100">
+						<div class="card-body d-flex flex-column">
+							<h3 class="h5 card-title">New Team Member</h3>
+							<a href="/register" class="btn btn-primary mt-auto w-100">Register</a>
+						</div>
+					</div>
 				</div>
-				<div class="col">
-					<h3>Returning Member <a href="/login" class="btn btn-primary">Login</a></h3>
+				<div class="col-md-4">
+					<div class="card h-100">
+						<div class="card-body d-flex flex-column">
+							<h3 class="h5 card-title">Returning Member</h3>
+							<a href="/login" class="btn btn-primary mt-auto w-100">Login</a>
+						</div>
+					</div>
 				</div>
-				<div class="col">
-					<h3>Mentor <a href="/login" class="btn btn-primary">Register</a></h3>
+				<div class="col-md-4">
+					<div class="card h-100">
+						<div class="card-body d-flex flex-column">
+							<h3 class="h5 card-title">Mentor</h3>
+							<a href="/login" class="btn btn-primary mt-auto w-100">Register</a>
+						</div>
+					</div>
 				</div>
 			</div>
 			<h3>Calendar</h3>

@@ -35,7 +35,7 @@ describe("landing page load", () => {
 describe("landing page member registration links", () => {
 	it("renders mentor registration as a matching button in the member options row", () => {
 		expect(landingMarkup).toMatch(
-			/<div class="row">[\s\S]*<div class="col">[\s\S]*New Team Member[\s\S]*<\/div>[\s\S]*<div class="col">[\s\S]*Returning Member[\s\S]*<\/div>[\s\S]*<div class="col">[\s\S]*<h3>Mentor <a href="\/login" class="btn btn-primary">Register<\/a><\/h3>[\s\S]*<\/div>[\s\S]*<\/div>/
+			/<div class="row g-4 mb-4">[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*New Team Member[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*Returning Member[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*<h3[^>]*>Mentor<\/h3>[\s\S]*<a href="\/login" class="btn btn-primary mt-auto w-100">Register<\/a>[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<\/div>/
 		);
 	});
 });
