@@ -255,6 +255,18 @@
 			</div>
 		</div>
 	{/if}
+
+	<section class="mt-4 mb-4" aria-labelledby="dashboard-calendar-heading">
+		<h2 id="dashboard-calendar-heading">Calendar</h2>
+		<div class="ratio ratio-16x9">
+			<iframe
+				title="Team 4909 Calendar"
+				src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FNew_York&title=Team%204909&showTz=0&showCalendars=0&src=dGVhbTQ5MDlAZ21haWwuY29t&color=%230b8043"
+				frameborder="0"
+				scrolling="no"
+			></iframe>
+		</div>
+	</section>
 </div>
 
 <style>
