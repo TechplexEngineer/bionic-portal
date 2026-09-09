@@ -58,6 +58,7 @@ export const actions: Actions = {
 		const tshirtSize = formData.get("tshirtSize") as string;
 		const currentGrade = formData.get("currentGrade") as string;
 		const gender = formData.get("gender") as string;
+		const dateOfBirth = formData.get("dateOfBirth")?.toString().trim() || "";
 
 		// Handle custom fields
 		const customFields: Record<string, string> = {};
@@ -69,6 +70,17 @@ export const actions: Actions = {
 
 		if (!firstName || !lastName) {
 			return fail(400, { message: "First and last name are required" });
+		}
+
+		if (!dateOfBirth) return fail(400, { message: "Date of birth is required" });
+		const parsedDateOfBirth = new Date(`${dateOfBirth}T00:00:00Z`);
+		if (
+			!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(dateOfBirth) ||
+			Number.isNaN(parsedDateOfBirth.getTime()) ||
+			parsedDateOfBirth.toISOString().slice(0, 10) !== dateOfBirth ||
+			parsedDateOfBirth > new Date()
+		) {
+			return fail(400, { message: "Enter a valid date of birth" });
 		}
 
 		if (!parentEmails || !parentEmails.trim()) {
@@ -118,6 +130,7 @@ export const actions: Actions = {
 					tshirtSize,
 					currentGrade,
 					gender,
+					dateOfBirth,
 					customFields: JSON.stringify(customFields)
 				})
 				.onConflictDoUpdate({
@@ -133,8 +146,9 @@ export const actions: Actions = {
 						graduationYear,
 						tshirtSize,
 						currentGrade,
-						gender,
-						customFields: JSON.stringify(customFields)
+					gender,
+					dateOfBirth,
+					customFields: JSON.stringify(customFields)
 					}
 				});
 

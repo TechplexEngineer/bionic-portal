@@ -32,9 +32,18 @@ const validFields = {
 	intoleranceLevel: "none",
 	currentGrade: "9",
 	gender: "Prefer not to say"
+	,dateOfBirth: "2010-06-15"
 };
 
 describe("student registration", () => {
+	it("requires a valid date of birth", async () => {
+		const { input } = event({ ...validFields, dateOfBirth: "" });
+		expect(await actions.default(input)).toMatchObject({
+			status: 400,
+			data: { message: "Date of birth is required" }
+		});
+	});
+
 	it("preserves the registration URL when redirecting an unauthenticated user to login", async () => {
 		const input = {
 			url: new URL("https://portal.example.org/register"),

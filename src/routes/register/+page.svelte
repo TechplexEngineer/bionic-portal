@@ -40,6 +40,7 @@
 	let tshirtSize = $state(data.student?.tshirtSize ?? "");
 	let currentGrade = $state(data.student?.currentGrade ?? "");
 	let gender = $state(data.student?.gender ?? "");
+	let dateOfBirth = $state(data.student?.dateOfBirth ?? "");
 
 	let submitting = $state(false);
 
@@ -99,6 +100,22 @@
 									bind:value={lastName}
 									placeholder="Last Name"
 									class="form-control"
+									required
+								/>
+							</div>
+						</div>
+						<div class="row g-3 mt-1">
+							<div class="col-md-6">
+								<label for="dateOfBirth" class="form-label"
+									>Date of Birth <span class="text-danger">*</span></label
+								>
+								<input
+									type="date"
+									id="dateOfBirth"
+									name="dateOfBirth"
+									bind:value={dateOfBirth}
+									class="form-control"
+									max={new Date().toISOString().slice(0, 10)}
 									required
 								/>
 							</div>

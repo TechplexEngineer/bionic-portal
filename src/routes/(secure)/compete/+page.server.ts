@@ -70,7 +70,7 @@ export const actions: Actions = {
 			.select()
 			.from(table.students)
 			.where(eq(table.students.userid, user.username));
-		if (!student) {
+		if (!student || !student.dateOfBirth) {
 			return fail(400, {
 				message: "Please complete your student profile before registering for an event"
 			});
