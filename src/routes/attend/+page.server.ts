@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { attendance, shopLocations } from "$lib/server/db/schema";
-import { asc } from "drizzle-orm";
+import { and, asc, eq, gte } from "drizzle-orm";
 import { sortEventsByStartDate } from "$lib/server/eventSorting";
 
 export const load = (async ({ locals }) => {
@@ -80,5 +80,29 @@ export const actions = {
 		});
 
 		return { success: true };
+	},
+	uncheckin: async ({ request, locals }) => {
+		const data = await request.formData();
+		const studentID = data.get("userid");
+
+		if (typeof studentID !== "string") {
+			return { success: false, error: "Invalid student ID" };
+		}
+
+		const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+		const attendanceRecord = await locals.db.query.attendance.findFirst({
+			where: (attendance, { eq, gte, and }) =>
+				and(eq(attendance.userid, studentID), gte(attendance.timestamp, sixHoursAgo))
+		});
+
+		if (!attendanceRecord) {
+			return { success: false, error: "Student is not checked in" };
+		}
+
+		await locals.db
+			.delete(attendance)
+			.where(and(eq(attendance.userid, studentID), gte(attendance.timestamp, sixHoursAgo)));
+
+		return { success: true, action: "uncheckin" };
 	}
 } satisfies Actions;

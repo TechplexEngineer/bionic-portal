@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { sortEventsByStartDate } from "$lib/server/eventSorting";
 import { load } from "./+page.server";
+import { actions } from "./+page.server";
 
 describe("sortEventsByStartDate", () => {
 	it("returns events from soonest to latest without mutating the input", () => {
@@ -65,5 +66,47 @@ describe("attendance page load", () => {
 			{ id: "active@example.com", name: "Active Student", here: false }
 		]);
 		expect(result.membersHere).toEqual([]);
+	});
+});
+
+describe("attendance page actions", () => {
+	it("unchecks a student by removing their active attendance record", async () => {
+		const deleteWhere = vi.fn().mockResolvedValue(undefined);
+		const db = {
+			query: {
+				attendance: { findFirst: vi.fn().mockResolvedValue({ userid: "active@example.com" }) }
+			},
+			delete: vi.fn(() => ({ where: deleteWhere }))
+		};
+
+		const result = await actions.uncheckin({
+			request: new Request("http://localhost/attend", {
+				method: "POST",
+				body: new URLSearchParams({ userid: "active@example.com" })
+			}),
+			locals: { db }
+		} as unknown as Parameters<typeof actions.uncheckin>[0]);
+
+		expect(result).toEqual({ success: true, action: "uncheckin" });
+		expect(db.delete).toHaveBeenCalledWith(expect.anything());
+		expect(deleteWhere).toHaveBeenCalledOnce();
+	});
+
+	it("does not delete when the student is not actively checked in", async () => {
+		const db = {
+			query: { attendance: { findFirst: vi.fn().mockResolvedValue(undefined) } },
+			delete: vi.fn()
+		};
+
+		const result = await actions.uncheckin({
+			request: new Request("http://localhost/attend", {
+				method: "POST",
+				body: new URLSearchParams({ userid: "active@example.com" })
+			}),
+			locals: { db }
+		} as unknown as Parameters<typeof actions.uncheckin>[0]);
+
+		expect(result).toEqual({ success: false, error: "Student is not checked in" });
+		expect(db.delete).not.toHaveBeenCalled();
 	});
 });

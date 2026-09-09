@@ -18,7 +18,10 @@
 		{ data: "id", title: "", renderSnippet: action }
 	];
 
-	const hereColumns: TableColumns = [{ data: "name", title: "Name" }];
+	const hereColumns: TableColumns = [
+		{ data: "name", title: "Name" },
+		{ data: "id", title: "", renderSnippet: uncheckinAction }
+	];
 
 	const oneDayMiliseconds = 24 * 60 * 60 * 1000; // milliseconds in a day
 
@@ -106,6 +109,13 @@
 	</form>
 {/snippet}
 
+{#snippet uncheckinAction(memberId: string)}
+	<form action="?/uncheckin" method="post" use:enhance>
+		<input type="hidden" name="userid" value={memberId} />
+		<button class="btn btn-sm btn-outline-secondary" type="submit">Uncheck In</button>
+	</form>
+{/snippet}
+
 <div class="container-fluid mx-auto">
 	<div class="row">
 		<div class="col">
@@ -115,7 +125,9 @@
 				</div>
 			{/if}
 			{#if form?.success}
-				<div class="alert alert-success" role="alert">Checked in successfully!</div>
+				<div class="alert alert-success" role="alert">
+					{form.action === "uncheckin" ? "Unchecked in successfully!" : "Checked in successfully!"}
+				</div>
 			{/if}
 			<div class="d-flex justify-content-between align-items-center">
 				<a href="/attend/register" class="btn btn-sm btn-secondary me-1">Register</a>
