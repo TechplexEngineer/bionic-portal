@@ -5,7 +5,9 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("Brevo magic links", () => {
 	it("sends a parent form invitation with a safe return link", async () => {
-		const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: "sent" })));
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValue(new Response(JSON.stringify({ messageId: "sent" })));
 		vi.stubGlobal("fetch", fetchMock);
 		await sendParentFormInvite(
 			"Parent@example.com",

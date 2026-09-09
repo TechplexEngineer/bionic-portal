@@ -26,7 +26,7 @@ function registrationAction({
 	existingRegistration = undefined
 }: {
 	eventRecord?: table.Events;
-	studentRecord?: { userid: string } | null;
+	studentRecord?: { userid: string; dateOfBirth?: string | null } | null;
 	existingRegistration?: object;
 } = {}) {
 	const select = vi

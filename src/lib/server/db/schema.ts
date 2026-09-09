@@ -44,11 +44,11 @@ export const students = sqliteTable(
 		intoleranceLevel: text("intolerance_level"), // "cannot_have" | "epi_pen" | "prefer_not"
 		graduationYear: text("graduation_year"),
 		tshirtSize: text("tshirt_size"),
-	customFields: text("custom_fields"), // JSON string for survey expansion
-	currentGrade: text("current_grade"),
-	gender: text("gender"),
-	dateOfBirth: text("date_of_birth"),
-	hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
+		customFields: text("custom_fields"), // JSON string for survey expansion
+		currentGrade: text("current_grade"),
+		gender: text("gender"),
+		dateOfBirth: text("date_of_birth"),
+		hidden: integer("hidden", { mode: "boolean" }).notNull().default(false)
 	},
 	(table) => [unique("uniqueUserName").on(table.firstName, table.lastName)]
 );
@@ -199,9 +199,7 @@ export const eventFormSubmissions = sqliteTable(
 		values: text("values", { mode: "json" }).notNull().default({}),
 		studentValues: text("student_values", { mode: "json" }).notNull().default({}),
 		parentValues: text("parent_values", { mode: "json" }).notNull().default({}),
-		studentCompleted: integer("student_completed", { mode: "boolean" })
-			.notNull()
-			.default(false),
+		studentCompleted: integer("student_completed", { mode: "boolean" }).notNull().default(false),
 		parentCompleted: integer("parent_completed", { mode: "boolean" }).notNull().default(false),
 		completedAt: integer("completed_at", { mode: "timestamp" })
 			.notNull()

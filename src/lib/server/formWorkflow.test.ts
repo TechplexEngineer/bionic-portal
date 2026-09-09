@@ -1,18 +1,34 @@
 import { describe, expect, it } from "vitest";
 import type { FormDefinition, FormValues } from "bionic-sign";
-import {
-	getAgeOnDate,
-	getFormStatus,
-	getOwnedFields,
-	validateOwnedValues
-} from "./formWorkflow";
+import { getAgeOnDate, getFormStatus, getOwnedFields, validateOwnedValues } from "./formWorkflow";
 
 const definition: FormDefinition = {
 	version: 1,
 	fields: [
-		{ id: "a", name: "student_name", type: "text", page: 1, rect: { x: 0, y: 0, width: 0.2, height: 0.1 }, required: true },
-		{ id: "b", name: "parent_signature", type: "signature", page: 1, rect: { x: 0.2, y: 0, width: 0.2, height: 0.1 }, required: true },
-		{ id: "c", name: "notes", type: "text", page: 1, rect: { x: 0.4, y: 0, width: 0.2, height: 0.1 }, required: false }
+		{
+			id: "a",
+			name: "student_name",
+			type: "text",
+			page: 1,
+			rect: { x: 0, y: 0, width: 0.2, height: 0.1 },
+			required: true
+		},
+		{
+			id: "b",
+			name: "parent_signature",
+			type: "signature",
+			page: 1,
+			rect: { x: 0.2, y: 0, width: 0.2, height: 0.1 },
+			required: true
+		},
+		{
+			id: "c",
+			name: "notes",
+			type: "text",
+			page: 1,
+			rect: { x: 0.4, y: 0, width: 0.2, height: 0.1 },
+			required: false
+		}
 	]
 };
 
@@ -35,11 +51,15 @@ describe("form workflow helpers", () => {
 	});
 
 	it("rejects values belonging to the other owner", () => {
-		const values: FormValues = { parent_signature: { type: "signature", image: "data:image/png;base64,AA==" } };
+		const values: FormValues = {
+			parent_signature: { type: "signature", image: "data:image/png;base64,AA==" }
+		};
 		expect(() => validateOwnedValues(definition, values, "student")).toThrow(/student-owned/);
-		expect(validateOwnedValues(definition, { student_name: textValue("Alex") }, "student")).toEqual({
-		student_name: textValue("Alex")
-	});
+		expect(validateOwnedValues(definition, { student_name: textValue("Alex") }, "student")).toEqual(
+			{
+				student_name: textValue("Alex")
+			}
+		);
 	});
 
 	it("reports student incomplete, parent pending, and complete states", () => {
@@ -58,7 +78,9 @@ describe("form workflow helpers", () => {
 			getFormStatus({
 				definition,
 				studentValues: { student_name: textValue("Alex") },
-				parentValues: { parent_signature: { type: "signature", image: "data:image/png;base64,AA==" } },
+				parentValues: {
+					parent_signature: { type: "signature", image: "data:image/png;base64,AA==" }
+				},
 				under18: true
 			})
 		).toBe("complete");

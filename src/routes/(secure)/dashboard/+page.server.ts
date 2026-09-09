@@ -1,6 +1,9 @@
 import type { PageServerLoad } from "./$types";
+import { redirect } from "@sveltejs/kit";
+import type { FormDefinition } from "bionic-sign";
 import { eq, inArray } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
+import { getAgeOnDate, getFormStatus } from "$lib/server/formWorkflow";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
@@ -8,6 +11,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const role = user.role;
 
 	if (role === "parent") {
+		return redirect(302, "/dashboard/parent");
 		// Load parent-specific data
 		const links = await db
 			.select()
@@ -130,7 +134,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		? await db
 				.select({
 					registrationId: table.eventFormSubmissions.registrationId,
-					eventFormId: table.eventFormSubmissions.eventFormId
+					eventFormId: table.eventFormSubmissions.eventFormId,
+					studentValues: table.eventFormSubmissions.studentValues,
+					parentValues: table.eventFormSubmissions.parentValues,
+					studentCompleted: table.eventFormSubmissions.studentCompleted,
+					parentCompleted: table.eventFormSubmissions.parentCompleted
 				})
 				.from(table.eventFormSubmissions)
 				.where(
@@ -150,22 +158,46 @@ export const load: PageServerLoad = async ({ locals }) => {
 				eventForms.filter((eventForm) => eventForm.eventId === r.eventId).length > 0
 					? eventForms
 							.filter((eventForm) => eventForm.eventId === r.eventId)
-							.every((eventForm) =>
-								completedForms.some(
-									(submission) =>
-										submission.registrationId === r.id && submission.eventFormId === eventForm.id
-								)
-							)
+							.every((eventForm) => {
+								const submission = completedForms.find(
+									(item) => item.registrationId === r.id && item.eventFormId === eventForm.id
+								);
+								return Boolean(
+									submission &&
+									getFormStatus({
+										definition: eventForm.definition as unknown as FormDefinition,
+										studentValues: submission.studentValues as never,
+										parentValues: submission.parentValues as never,
+										under18: Boolean(
+											student?.dateOfBirth &&
+											getAgeOnDate(student.dateOfBirth, new Date(r.eventData.startDate)) < 18
+										)
+									}) === "complete"
+								);
+							})
 					: r.formCompleted,
 			forms: eventForms
 				.filter((eventForm) => eventForm.eventId === r.eventId)
 				.map((eventForm) => ({
 					id: eventForm.id,
 					name: eventForm.name,
-					completed: completedForms.some(
-						(submission) =>
-							submission.registrationId === r.id && submission.eventFormId === eventForm.id
-					)
+					completed: (() => {
+						const submission = completedForms.find(
+							(item) => item.registrationId === r.id && item.eventFormId === eventForm.id
+						);
+						return Boolean(
+							submission &&
+							getFormStatus({
+								definition: eventForm.definition as unknown as FormDefinition,
+								studentValues: submission.studentValues as never,
+								parentValues: submission.parentValues as never,
+								under18: Boolean(
+									student?.dateOfBirth &&
+									getAgeOnDate(student.dateOfBirth, new Date(r.eventData.startDate)) < 18
+								)
+							}) === "complete"
+						);
+					})()
 				})),
 			invoicePaymentLink: r.invoicePaymentLink,
 			eventId: r.eventId,

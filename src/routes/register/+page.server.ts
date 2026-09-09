@@ -146,9 +146,9 @@ export const actions: Actions = {
 						graduationYear,
 						tshirtSize,
 						currentGrade,
-					gender,
-					dateOfBirth,
-					customFields: JSON.stringify(customFields)
+						gender,
+						dateOfBirth,
+						customFields: JSON.stringify(customFields)
 					}
 				});
 

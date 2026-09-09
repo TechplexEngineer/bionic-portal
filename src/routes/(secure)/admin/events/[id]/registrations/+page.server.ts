@@ -40,13 +40,16 @@ export const load: PageServerLoad = async (event) => {
 	const submissions = await db
 		.select({
 			registrationId: table.eventFormSubmissions.registrationId,
-			eventFormId: table.eventFormSubmissions.eventFormId
+			eventFormId: table.eventFormSubmissions.eventFormId,
+			signedPdfKey: table.eventFormSubmissions.signedPdfKey
 		})
 		.from(table.eventFormSubmissions)
 		.innerJoin(table.eventForms, eq(table.eventFormSubmissions.eventFormId, table.eventForms.id))
 		.where(eq(table.eventForms.eventId, eventId));
 	const submissionKeys = new Set(
-		submissions.map((submission) => `${submission.registrationId}:${submission.eventFormId}`)
+		submissions
+			.filter((submission) => Boolean(submission.signedPdfKey))
+			.map((submission) => `${submission.registrationId}:${submission.eventFormId}`)
 	);
 	const formsByRegistration = Object.fromEntries(
 		registrations.map((registration) => [

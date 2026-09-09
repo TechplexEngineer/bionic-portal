@@ -42,13 +42,20 @@ export async function issueParentFormInvite(
 	return invite ? { id: invite.id, token } : null;
 }
 
-export async function consumeParentFormInvite(db: DbInstance, inviteId: string, now = new Date()) {
+export async function consumeParentFormInvite(
+	db: DbInstance,
+	inviteId: string,
+	token: unknown,
+	now = new Date()
+) {
+	if (!isInviteToken(token)) return null;
 	const [invite] = await db
 		.select()
 		.from(parentFormInvites)
 		.where(
 			and(
 				eq(parentFormInvites.id, inviteId),
+				eq(parentFormInvites.code, hashInviteToken(token)),
 				gt(parentFormInvites.expiresAt, now),
 				isNull(parentFormInvites.consumedAt)
 			)

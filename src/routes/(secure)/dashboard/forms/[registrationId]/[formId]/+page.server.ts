@@ -1,5 +1,15 @@
-import { error, fail, redirect } from "@sveltejs/kit";
-import { eq, and } from "drizzle-orm";
+import { fail, redirect } from "@sveltejs/kit";
+import { and, eq } from "drizzle-orm";
+import { env } from "$env/dynamic/private";
+import { validateDefinition } from "bionic-sign";
+import { sendParentFormInvite } from "$lib/server/brevo";
+import {
+	getAgeOnDate,
+	getFormStatus,
+	hasRequiredValues,
+	validateOwnedValues
+} from "$lib/server/formWorkflow";
+import { issueParentFormInvite } from "$lib/server/parentInvites";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -38,6 +48,14 @@ async function getAuthorizedForm(
 	return row;
 }
 
+function parseValues(value: FormDataEntryValue | null) {
+	if (typeof value !== "string") throw new Error("Submitted form values are invalid.");
+	const parsed = JSON.parse(value);
+	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+		throw new Error("Submitted form values are invalid.");
+	return parsed;
+}
+
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const row = await getAuthorizedForm(
 		locals.db,
@@ -46,18 +64,79 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		params.formId
 	);
 	if (!row) throw redirect(302, "/dashboard");
+	const definition = validateDefinition(row.form.definition);
+	const studentValues = (row.submission?.studentValues ?? {}) as Record<string, never>;
+	const parentValues = (row.submission?.parentValues ?? {}) as Record<string, never>;
+	const under18 = getAgeOnDate(row.student.dateOfBirth!, new Date(row.event.data.startDate)) < 18;
 	return {
 		form: row.form,
 		registrationId: params.registrationId,
 		formId: params.formId,
 		event: { id: row.event.id, ...row.event.data },
 		student: row.student,
-		completed: Boolean(row.submission)
+		definition,
+		studentValues,
+		status: getFormStatus({ definition, studentValues, parentValues, under18 }),
+		parentEmails:
+			row.student.parentEmails
+				?.split(",")
+				.map((email) => email.trim())
+				.filter(Boolean) ?? []
 	};
 };
 
+async function saveStudentDraft(
+	request: Request,
+	locals: App.Locals,
+	registrationId: string,
+	formId: string
+) {
+	const row = await getAuthorizedForm(locals.db, locals.user!.username, registrationId, formId);
+	if (!row) return fail(404, { message: "Form not found" });
+	try {
+		const definition = validateDefinition(row.form.definition);
+		const values = validateOwnedValues(
+			definition,
+			parseValues((await request.formData()).get("values")),
+			"student"
+		);
+		const existing = row.submission;
+		const studentValues = { ...((existing?.studentValues ?? {}) as object), ...values };
+		const studentCompleted = hasRequiredValues(definition, studentValues, "student");
+		if (existing) {
+			await locals.db
+				.update(table.eventFormSubmissions)
+				.set({
+					studentValues,
+					studentCompleted,
+					values: { ...studentValues, ...((existing.parentValues ?? {}) as object) }
+				})
+				.where(eq(table.eventFormSubmissions.id, existing.id));
+		} else {
+			await locals.db
+				.insert(table.eventFormSubmissions)
+				.values({
+					id: crypto.randomUUID(),
+					registrationId: row.registration.id,
+					eventFormId: row.form.id,
+					values: studentValues,
+					studentValues,
+					parentValues: {},
+					studentCompleted
+				});
+		}
+		return { success: true, message: "Draft saved." };
+	} catch (error) {
+		return fail(400, { message: error instanceof Error ? error.message : "Unable to save draft." });
+	}
+}
+
 export const actions: Actions = {
-	submit: async ({ request, locals, platform, params }) => {
+	saveDraft: ({ request, locals, params }) =>
+		saveStudentDraft(request, locals, params.registrationId, params.formId),
+	submit: ({ request, locals, params }) =>
+		saveStudentDraft(request, locals, params.registrationId, params.formId),
+	sendParent: async ({ request, locals, params, url, platform }) => {
 		const row = await getAuthorizedForm(
 			locals.db,
 			locals.user!.username,
@@ -65,47 +144,41 @@ export const actions: Actions = {
 			params.formId
 		);
 		if (!row) return fail(404, { message: "Form not found" });
-		const formData = await request.formData();
-		const pdf = formData.get("pdf");
-		const valuesText = formData.get("values")?.toString();
-		if (!(pdf instanceof File) || pdf.size === 0 || !valuesText)
-			return fail(400, { message: "A completed PDF is required." });
-		let values: unknown;
-		try {
-			values = JSON.parse(valuesText);
-		} catch {
-			return fail(400, { message: "Submitted form values are invalid." });
+		const email = (await request.formData()).get("parentEmail")?.toString().trim().toLowerCase();
+		const allowed =
+			row.student.parentEmails?.split(",").map((value) => value.trim().toLowerCase()) ?? [];
+		if (!email || !allowed.includes(email))
+			return fail(400, { message: "Select a parent email from your profile." });
+		if (!row.submission?.studentCompleted)
+			return fail(400, { message: "Save your student portion before inviting a parent." });
+		const definition = validateDefinition(row.form.definition);
+		if (
+			getAgeOnDate(row.student.dateOfBirth!, new Date(row.event.data.startDate)) >= 18 ||
+			!definition.fields.some((field) => field.name.startsWith("parent_") && field.required)
+		) {
+			return fail(400, { message: "This form does not require a parent signature." });
 		}
-		const submissionId = row.submission?.id ?? crypto.randomUUID();
-		const signedPdfKey =
-			row.submission?.signedPdfKey ??
-			`events/${row.event.id}/forms/${row.form.id}/signed/${row.registration.id}.pdf`;
 		try {
-			const bucket = platform?.env.FORMS_BUCKET;
-			if (!bucket) throw new Error("Forms storage is not configured");
-			await bucket.put(signedPdfKey, await pdf.arrayBuffer(), {
-				httpMetadata: { contentType: "application/pdf" }
-			});
-			await locals.db
-				.insert(table.eventFormSubmissions)
-				.values({
-					id: submissionId,
-					registrationId: row.registration.id,
-					eventFormId: row.form.id,
-					signedPdfKey,
-					values
-				})
-				.onConflictDoUpdate({
-					target: [
-						table.eventFormSubmissions.registrationId,
-						table.eventFormSubmissions.eventFormId
-					],
-					set: { signedPdfKey, values, completedAt: new Date() }
-				});
-		} catch (submitError) {
-			console.error("Failed to save signed event form:", submitError);
-			return fail(500, { message: "Unable to save your completed form." });
+			const invite = await issueParentFormInvite(locals.db, row.submission.id, email);
+			if (!invite) return fail(429, { message: "Please wait before sending another invitation." });
+			const inviteUrl = new URL(`/dashboard/parent/forms/${invite.id}`, url.origin);
+			inviteUrl.searchParams.set("token", invite.token);
+			const apiKey = platform?.env.BREVO_API_KEY || env.BREVO_API_KEY;
+			if (!apiKey) throw new Error("BREVO_API_KEY is not configured");
+			await sendParentFormInvite(
+				email,
+				`${row.student.firstName} ${row.student.lastName}`,
+				row.event.data.name,
+				inviteUrl.toString(),
+				apiKey
+			);
+			return { success: true, message: "Invitation sent to the parent." };
+		} catch (error) {
+			console.error(
+				"Failed to send parent form invitation:",
+				error instanceof Error ? error.message : "unknown error"
+			);
+			return fail(503, { message: "Unable to send the parent invitation. Please try again." });
 		}
-		return { success: true };
 	}
 };

@@ -41,6 +41,7 @@ describe("admin student edit", () => {
 			"customFields",
 			"currentGrade",
 			"gender",
+			"dateOfBirth",
 			"hidden"
 		]);
 		expect(getStudentFields().find((field) => field.key === "hidden")).toMatchObject({
@@ -64,7 +65,8 @@ describe("admin student edit", () => {
 			tshirtSize: "M",
 			customFields: '{"team":"A"}',
 			currentGrade: "8",
-			gender: "F"
+			gender: "F",
+			dateOfBirth: "2010-01-02"
 		});
 
 		await expect(actions.default(input)).rejects.toMatchObject({
@@ -86,6 +88,7 @@ describe("admin student edit", () => {
 			customFields: '{"team":"A"}',
 			currentGrade: "8",
 			gender: "F",
+			dateOfBirth: "2010-01-02",
 			hidden: false
 		});
 	});
