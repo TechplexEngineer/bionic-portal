@@ -139,7 +139,7 @@
 			<TableForObjectArray data={data.membersHere} columns={hereColumns} searchable={false} />
 		</div>
 		<div class="col">
-			<div class="overflow-y-auto" style="max-height: 50vh;">
+			<div>
 				<h2>Upcomming Events</h2>
 				{#each data.events as evt}
 					{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
