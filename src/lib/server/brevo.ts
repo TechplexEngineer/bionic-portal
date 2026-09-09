@@ -13,6 +13,28 @@ export async function sendMagicLink(email: string, url: string, apiKey: string) 
 	);
 }
 
+export async function sendParentFormInvite(
+	email: string,
+	studentName: string,
+	eventName: string,
+	url: string,
+	apiKey: string
+) {
+	const escapeHtml = (value: string) =>
+		value
+			.replace(/&/g, "&amp;")
+			.replace(/"/g, "&quot;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+	return sendEmail(
+		[{ email }],
+		`Parent signature needed for ${studentName}`,
+		`<p>${escapeHtml(studentName)} has completed their part of a form for ${escapeHtml(eventName)}.</p><p>Please sign in to Bionic Portal to complete the parent signature.</p><p><a href="${escapeHtml(url)}">Review and sign the form</a></p><p>This invitation expires in 7 days.</p>`,
+		apiKey,
+		{ name: "Team 4909 No Reply", email: "no-reply@team4909.org" }
+	);
+}
+
 export async function sendEmail(
 	to: { email: string; name?: string }[],
 	subject: string,
