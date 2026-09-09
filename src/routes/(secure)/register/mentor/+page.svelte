@@ -132,43 +132,6 @@
 							</div>
 						</div>
 
-						<div class="mb-3">
-							<label for="yearsMentoring" class="form-label"
-								>How much mentoring or coaching experience do you have? <span class="text-danger"
-									>*</span
-								></label
-							>
-							<input
-								id="yearsMentoring"
-								name="yearsMentoring"
-								class="form-control"
-								placeholder="e.g. 3 years with a robotics team"
-								value={data.profile?.yearsMentoring ?? ""}
-								required
-							/>
-						</div>
-						<div class="mb-3">
-							<label for="expertise" class="form-label"
-								>What skills or areas can you mentor? <span class="text-danger">*</span></label
-							>
-							<textarea
-								id="expertise"
-								name="expertise"
-								class="form-control"
-								rows="3"
-								placeholder="e.g. CAD, programming, project management"
-								required>{data.profile?.expertise ?? ""}</textarea
-							>
-						</div>
-						<div class="mb-4">
-							<label for="motivation" class="form-label"
-								>What interests you about mentoring Team 4909?</label
-							>
-							<textarea id="motivation" name="motivation" class="form-control" rows="3"
-								>{data.profile?.motivation ?? ""}</textarea
-							>
-						</div>
-
 						<button type="submit" class="btn btn-primary" disabled={submitting}>
 							{submitting ? "Saving…" : "Save Mentor Profile"}
 						</button>

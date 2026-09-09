@@ -33,11 +33,8 @@ export const actions: Actions = {
 		const company = formData.get("company")?.toString().trim() ?? "";
 		const tshirtSize = formData.get("tshirtSize")?.toString() ?? "";
 		const firstAlumni = formData.get("firstAlumni")?.toString() ?? "";
-		const yearsMentoring = formData.get("yearsMentoring")?.toString().trim() ?? "";
-		const expertise = formData.get("expertise")?.toString().trim() ?? "";
-		const motivation = formData.get("motivation")?.toString().trim() || null;
 
-		if (!firstName || !lastName || !phone || !company || !yearsMentoring || !expertise) {
+		if (!firstName || !lastName || !phone || !company) {
 			return fail(400, { message: "Please complete all required mentor fields." });
 		}
 		if (!shirtSizes.includes(tshirtSize)) {
@@ -57,10 +54,7 @@ export const actions: Actions = {
 					phone,
 					company,
 					tshirtSize,
-					firstAlumni,
-					yearsMentoring,
-					expertise,
-					motivation
+					firstAlumni
 				})
 				.onConflictDoUpdate({
 					target: table.mentorProfiles.userId,
@@ -70,10 +64,7 @@ export const actions: Actions = {
 						phone,
 						company,
 						tshirtSize,
-						firstAlumni,
-						yearsMentoring,
-						expertise,
-						motivation
+						firstAlumni
 					}
 				});
 
