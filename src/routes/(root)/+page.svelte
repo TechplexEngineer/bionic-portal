@@ -42,7 +42,7 @@
 					<div class="card h-100">
 						<div class="card-body d-flex flex-column">
 							<h3 class="h5 card-title">Mentor</h3>
-							<a href="/login" class="btn btn-primary mt-auto w-100">Register</a>
+							<a href="/register/mentor" class="btn btn-primary mt-auto w-100">Register</a>
 						</div>
 					</div>
 				</div>
