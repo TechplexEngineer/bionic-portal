@@ -1,7 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { env } from "$env/dynamic/private";
-import { validateDefinition } from "bionic-sign";
+import { validateDefinition } from "@team4909/bionic-sign";
 import { sendParentFormInvite } from "$lib/server/brevo";
 import {
 	getAgeOnDate,

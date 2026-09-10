@@ -1,4 +1,4 @@
-import type { FormDefinition, FormField, FormValues } from "bionic-sign";
+import type { FormDefinition, FormField, FormValues } from "@team4909/bionic-sign";
 
 export type FormOwner = "student" | "parent";
 export type FormStatus = "student-incomplete" | "parent-pending" | "complete";

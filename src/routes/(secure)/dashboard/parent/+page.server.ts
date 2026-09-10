@@ -1,5 +1,5 @@
 import { eq, inArray } from "drizzle-orm";
-import { validateDefinition } from "bionic-sign";
+import { validateDefinition } from "@team4909/bionic-sign";
 import * as table from "$lib/server/db/schema";
 import { getOwnedFields } from "$lib/server/formWorkflow";
 import type { PageServerLoad } from "./$types";

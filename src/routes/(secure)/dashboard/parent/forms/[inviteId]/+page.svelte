@@ -1,6 +1,6 @@
 <script lang="ts">
-	import "bionic-sign/styles.css";
-	import { PdfFormFiller, type FormSubmission } from "bionic-sign";
+	import "@team4909/bionic-sign/styles.css";
+	import { PdfFormFiller, type FormSubmission } from "@team4909/bionic-sign";
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 	let { data, form }: PageProps = $props();

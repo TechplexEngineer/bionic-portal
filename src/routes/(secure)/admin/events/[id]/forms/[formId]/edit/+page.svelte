@@ -1,6 +1,6 @@
 <script lang="ts">
-	import "bionic-sign/styles.css";
-	import { PdfFormDesigner, type FormDefinition } from "bionic-sign";
+	import "@team4909/bionic-sign/styles.css";
+	import { PdfFormDesigner, type FormDefinition } from "@team4909/bionic-sign";
 	import { enhance } from "$app/forms";
 	import { resolve } from "$app/paths";
 	import type { PageProps } from "./$types";
