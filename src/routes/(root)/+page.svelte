@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import type { PageProps } from "./$types";
 	import CountdownCard from "$lib/components/CountdownCard.svelte";
 
@@ -26,23 +27,25 @@
 					<div class="card h-100">
 						<div class="card-body d-flex flex-column">
 							<h3 class="h5 card-title">New Team Member</h3>
-							<a href="/register" class="btn btn-primary mt-auto w-100">Register</a>
+							<a href={resolve("/register")} class="btn btn-primary mt-auto w-100">Register</a>
 						</div>
 					</div>
 				</div>
 				<div class="col-md-4">
 					<div class="card h-100">
 						<div class="card-body d-flex flex-column">
-							<h3 class="h5 card-title">Returning Member</h3>
-							<a href="/login" class="btn btn-primary mt-auto w-100">Login</a>
+							<h3 class="h5 card-title">Returning User</h3>
+							<a href={resolve("/login")} class="btn btn-primary mt-auto w-100">Login</a>
 						</div>
 					</div>
 				</div>
 				<div class="col-md-4">
 					<div class="card h-100">
 						<div class="card-body d-flex flex-column">
-							<h3 class="h5 card-title">Mentor</h3>
-							<a href="/register/mentor" class="btn btn-primary mt-auto w-100">Register</a>
+							<h3 class="h5 card-title">Parent</h3>
+							<a href={resolve("/register/parent")} class="btn btn-primary mt-auto w-100"
+								>Register</a
+							>
 						</div>
 					</div>
 				</div>
@@ -59,7 +62,7 @@
 
 		<div class="col-md-4">
 			<h3>Upcoming Events</h3>
-			{#each data.events as evt}
+			{#each data.events as evt (evt.name)}
 				{#if new Date(evt.dateStr).getTime() > Date.now() - oneDayMiliseconds}
 					<CountdownCard name={evt.name} date={evt.dateStr} />
 				{/if}

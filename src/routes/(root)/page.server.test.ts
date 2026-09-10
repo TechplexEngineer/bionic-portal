@@ -33,9 +33,11 @@ describe("landing page load", () => {
 });
 
 describe("landing page member registration links", () => {
-	it("renders mentor registration as a matching button in the member options row", () => {
-		expect(landingMarkup).toMatch(
-			/<div class="row g-4 mb-4">[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*New Team Member[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*Returning Member[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<div class="col-md-4">[\s\S]*<div class="card h-100">[\s\S]*<h3[^>]*>Mentor<\/h3>[\s\S]*<a href="\/register\/mentor" class="btn btn-primary mt-auto w-100">Register<\/a>[\s\S]*<\/div>[\s\S]*<\/div>[\s\S]*<\/div>/
-		);
+	it("offers parent registration and keeps mentor registration out of the member options row", () => {
+		expect(landingMarkup).toContain("New Team Member");
+		expect(landingMarkup).toContain("Returning User");
+		expect(landingMarkup).toContain("Parent");
+		expect(landingMarkup).toContain('href={resolve("/register/parent")}');
+		expect(landingMarkup).not.toContain('href="/register/mentor"');
 	});
 });

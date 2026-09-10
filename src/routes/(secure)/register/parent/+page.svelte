@@ -1,22 +1,28 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { enhance } from "$app/forms";
-	import type { ActionData, PageProps } from "./$types";
+	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
 
 	let loading = $state(false);
 </script>
 
+<svelte:head>
+	<title>Parent Registration | Bionic Portal</title>
+</svelte:head>
+
 <div class="container py-5">
 	<div class="row justify-content-center">
 		<div class="col-md-6">
 			<div class="card shadow-sm border-0">
 				<div class="card-body p-4">
-					<h2 class="card-title fw-bold mb-4">Connect to Your Student</h2>
+					<h1 class="h2 card-title fw-bold mb-2">Parent Registration</h1>
+					<p class="text-body-secondary mb-4">Signed in as {data.user.username}</p>
 					<p class="text-secondary mb-4">
-						To manage your student's registrations and view their attendance, please enter their
-						school email address below. You can connect multiple students by submitting this form
-						more than once.
+						Enter your student's school email address to link their account to yours. Once
+						connected, you can manage registrations and view attendance. You can connect multiple
+						students by submitting this form more than once.
 					</p>
 
 					{#if form?.message}
@@ -93,8 +99,8 @@
 								/>
 							</div>
 							<div class="form-text mt-2">
-								Your student must have already registered an account with this email. Homeschool
-								students without a @billericak12.com address can use their personal email.
+								Your student must have already completed their student registration with this email.
+								Homeschool students can use the personal email on their student profile.
 							</div>
 						</div>
 
@@ -120,7 +126,7 @@
 				<div class="mt-5">
 					<h4 class="fw-bold mb-3">Linked Students</h4>
 					<div class="list-group shadow-sm">
-						{#each data.linkedStudents as s}
+						{#each data.linkedStudents as s (s.userid)}
 							<div class="list-group-item d-flex justify-content-between align-items-center py-3">
 								<div>
 									<div class="fw-semibold">{s.firstName} {s.lastName}</div>
@@ -131,7 +137,7 @@
 						{/each}
 					</div>
 					<div class="mt-3">
-						<a href="/dashboard" class="btn btn-outline-primary w-100">
+						<a href={resolve("/dashboard")} class="btn btn-outline-primary w-100">
 							<i class="fa fa-tachometer me-1"></i> Go to Dashboard
 						</a>
 					</div>
