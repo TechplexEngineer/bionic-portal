@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Header from "$lib/components/Header.svelte";
+	import Footer from "$lib/components/Footer.svelte";
 	import { browser } from "$app/environment";
 	import { onMount } from "svelte";
 	import "../styles/bootstrap.scss";
@@ -24,3 +25,4 @@
 
 <Header user={data.user} />
 {@render children()}
+<Footer />
