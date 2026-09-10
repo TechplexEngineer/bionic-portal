@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FormDefinition, FormValues } from "bionic-sign";
+import type { FormDefinition, FormValues } from "@team4909/bionic-sign";
 import { getAgeOnDate, getFormStatus, getOwnedFields, validateOwnedValues } from "./formWorkflow";
 
 const definition: FormDefinition = {

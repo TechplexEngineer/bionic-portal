@@ -5,6 +5,9 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig(({ mode }) => ({
 	plugins: [sveltekit(), devtoolsJson()],
+	optimizeDeps: {
+		exclude: ["@team4909/bionic-sign"]
+	},
 	resolve: mode === "test" ? { conditions: ["browser"] } : undefined,
 	test: {
 		expect: { requireAssertions: true },

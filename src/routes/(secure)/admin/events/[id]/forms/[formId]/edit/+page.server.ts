@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { validateDefinition } from "bionic-sign";
+import { validateDefinition } from "@team4909/bionic-sign";
 import { and, eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";

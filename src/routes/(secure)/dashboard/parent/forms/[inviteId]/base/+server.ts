@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
-import { exportFlattenedPdf, validateDefinition } from "bionic-sign";
+import { exportFlattenedPdf, validateDefinition } from "@team4909/bionic-sign";
 import { getOwnedFields } from "$lib/server/formWorkflow";
 import * as table from "$lib/server/db/schema";
 import type { RequestHandler } from "./$types";

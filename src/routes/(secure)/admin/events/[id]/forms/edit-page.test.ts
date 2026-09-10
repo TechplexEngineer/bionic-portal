@@ -87,7 +87,7 @@ describe("event form editor server", () => {
 describe("event form editor page", () => {
 	it("renders the stored form and full-width designer against the local base endpoint", () => {
 		expect(pageMarkup).toContain(
-			'import { PdfFormDesigner, type FormDefinition } from "bionic-sign"'
+			'import { PdfFormDesigner, type FormDefinition } from "@team4909/bionic-sign"'
 		);
 		expect(pageMarkup).toContain(
 			'source="/admin/events/{data.event.id}/forms/{data.form.id}/base"'

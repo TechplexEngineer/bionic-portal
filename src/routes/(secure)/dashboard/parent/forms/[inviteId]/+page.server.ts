@@ -1,6 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
-import { exportFlattenedPdf, validateDefinition } from "bionic-sign";
+import { exportFlattenedPdf, validateDefinition } from "@team4909/bionic-sign";
 import { consumeParentFormInvite } from "$lib/server/parentInvites";
 import { getOwnedFields, validateOwnedValues } from "$lib/server/formWorkflow";
 import * as table from "$lib/server/db/schema";

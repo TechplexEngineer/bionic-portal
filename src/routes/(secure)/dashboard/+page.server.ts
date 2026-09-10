@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
-import type { FormDefinition } from "bionic-sign";
+import type { FormDefinition } from "@team4909/bionic-sign";
 import { eq, inArray } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { getAgeOnDate, getFormStatus } from "$lib/server/formWorkflow";
