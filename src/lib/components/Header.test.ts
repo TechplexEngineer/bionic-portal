@@ -5,6 +5,10 @@ import { describe, expect, it } from "vitest";
 const headerMarkup = readFileSync(resolve(import.meta.dirname, "Header.svelte"), "utf8");
 
 describe("Header user menu", () => {
+	it("shows the signed-in user's email address", () => {
+		expect(headerMarkup).toMatch(/<span class="dropdown-item-text">\{user\.username\}<\/span>/);
+	});
+
 	it("right-aligns the dropdown so it stays within the viewport", () => {
 		expect(headerMarkup).toMatch(/class="dropdown-menu dropdown-menu-end text-small"/);
 	});
