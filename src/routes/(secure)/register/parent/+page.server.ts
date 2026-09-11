@@ -49,7 +49,10 @@ export const actions: Actions = {
 		}
 
 		const formData = await event.request.formData();
-		const studentEmail = (formData.get("studentEmail") as string)?.toLowerCase().trim();
+		const studentEmails = formData
+			.getAll("studentEmail")
+			.map((value) => (value as string).toLowerCase().trim())
+			.filter(Boolean);
 		const phone = (formData.get("phone") as string)?.trim();
 		const educationLevel = (formData.get("educationLevel") as string)?.trim();
 		const degree = (formData.get("degree") as string)?.trim();
@@ -62,15 +65,21 @@ export const actions: Actions = {
 		const db = event.locals.db;
 		const userId = event.locals.user.id;
 
-		// 1. Verify student exists
-		let student = studentEmail
-			? (await db.select().from(table.students).where(eq(table.students.userid, studentEmail)))[0]
-			: undefined;
+		// 1. Verify every submitted student exists before changing the parent's profile.
+		const students = await Promise.all(
+			[...new Set(studentEmails)].map(async (studentEmail) => {
+				const [student] = await db
+					.select()
+					.from(table.students)
+					.where(eq(table.students.userid, studentEmail));
+				return { email: studentEmail, student };
+			})
+		);
 
-		if (studentEmail && !student) {
+		const missingStudent = students.find(({ student }) => !student);
+		if (missingStudent) {
 			return fail(400, {
-				message:
-					"No student found with that email address. Please make sure your student has registered first."
+				message: `No student found with that email address: ${missingStudent.email}. Please make sure your student has registered first.`
 			});
 		}
 
@@ -84,12 +93,14 @@ export const actions: Actions = {
 					set: { phone, educationLevel, degree, jobTitle }
 				});
 
-			// 3. Create link
-			if (student) {
-				await db
-					.insert(table.parentStudentLinks)
-					.values({ parentId: userId, studentId: student.userid })
-					.onConflictDoNothing();
+			// 3. Create links for all submitted students.
+			for (const { student } of students) {
+				if (student) {
+					await db
+						.insert(table.parentStudentLinks)
+						.values({ parentId: userId, studentId: student.userid })
+						.onConflictDoNothing();
+				}
 			}
 
 			// 4. Update user role to 'parent' if it's currently 'user'
