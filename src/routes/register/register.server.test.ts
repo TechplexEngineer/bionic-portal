@@ -17,6 +17,7 @@ function event(fields: Record<string, string>) {
 				db: { insert }
 			}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
+		values,
 		onConflictDoUpdate
 	};
 }
@@ -31,8 +32,8 @@ const validFields = {
 	tshirtSize: "M",
 	intoleranceLevel: "none",
 	currentGrade: "9",
-	gender: "Prefer not to say"
-	,dateOfBirth: "2010-06-15"
+	gender: "Prefer not to say",
+	dateOfBirth: "2010-06-15"
 };
 
 describe("student registration", () => {
@@ -69,6 +70,27 @@ describe("student registration", () => {
 					"A student with this name is already registered. If this is you, please sign in with your existing account."
 			}
 		});
+	});
+
+	it("persists the free-text registration questions", async () => {
+		const { input, values } = event({
+			...validFields,
+			custom_aspirationsAfterHighSchool: "Attend college and study engineering",
+			custom_winterSpringSports: "Yes, I plan to play soccer",
+			custom_teamGoals: "Learn new skills and contribute to the team"
+		});
+
+		await actions.default(input);
+
+		expect(values).toHaveBeenCalledWith(
+			expect.objectContaining({
+				customFields: JSON.stringify({
+					aspirationsAfterHighSchool: "Attend college and study engineering",
+					winterSpringSports: "Yes, I plan to play soccer",
+					teamGoals: "Learn new skills and contribute to the team"
+				})
+			})
+		);
 	});
 
 	it("keeps unrelated save failures generic", async () => {

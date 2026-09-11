@@ -41,6 +41,11 @@
 	let currentGrade = $state(data.student?.currentGrade ?? "");
 	let gender = $state(data.student?.gender ?? "");
 	let dateOfBirth = $state(data.student?.dateOfBirth ?? "");
+	let customAnswers = $state<Record<string, string>>({
+		aspirationsAfterHighSchool: data.student?.customFields?.aspirationsAfterHighSchool ?? "",
+		winterSpringSports: data.student?.customFields?.winterSpringSports ?? "",
+		teamGoals: data.student?.customFields?.teamGoals ?? ""
+	});
 
 	let submitting = $state(false);
 
@@ -50,6 +55,17 @@
 	const tshirtSizes = ["YS", "YM", "YL", "YXL", "S", "M", "L", "XL", "2XL", "3XL"];
 	const grades = ["8", "9", "10", "11", "12"];
 	const genders = ["Male", "Female", "Non-binary", "Prefer not to say", "Other"];
+	const registrationQuestions = [
+		{ key: "aspirationsAfterHighSchool", label: "What are your aspirations after high school?" },
+		{
+			key: "winterSpringSports",
+			label: "Do you plan to participate in any winter or spring sports?"
+		},
+		{
+			key: "teamGoals",
+			label: "What do you hope to accomplish or learn if you decide to join the team?"
+		}
+	];
 </script>
 
 <svelte:head>
@@ -329,10 +345,23 @@
 						</fieldset>
 					</div>
 
-					{#if data.student?.customFields && Object.keys(data.student.customFields).length > 0}
-						<div class="mb-5">
-							<h2 class="h4 border-bottom pb-2 mb-3">Additional Questions</h2>
-							{#each Object.entries(data.student.customFields) as [key, value]}
+					<div class="mb-5">
+						<h2 class="h4 border-bottom pb-2 mb-3">Additional Questions</h2>
+						{#each registrationQuestions as question (question.key)}
+							<div class="mb-3">
+								<label for="custom_{question.key}" class="form-label">{question.label}</label>
+								<textarea
+									id="custom_{question.key}"
+									name="custom_{question.key}"
+									bind:value={customAnswers[question.key]}
+									class="form-control"
+									rows="3"
+									placeholder="Enter your answer"
+								></textarea>
+							</div>
+						{/each}
+						{#each Object.entries(data.student?.customFields ?? {}) as [key, value] (key)}
+							{#if !registrationQuestions.some((question) => question.key === key)}
 								<div class="mb-3">
 									<label for="custom_{key}" class="form-label">{key}</label>
 									<input
@@ -344,9 +373,9 @@
 										placeholder="Enter your answer"
 									/>
 								</div>
-							{/each}
-						</div>
-					{/if}
+							{/if}
+						{/each}
+					</div>
 
 					{#if form?.message}
 						<div class="alert alert-{form.success ? 'success' : 'danger'} mb-3">
