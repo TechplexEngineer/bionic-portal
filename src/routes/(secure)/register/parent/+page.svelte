@@ -82,8 +82,47 @@
 						{/if}
 
 						<div class="mb-4">
+							<label for="educationLevel" class="form-label fw-semibold"
+								>Level of Education <span class="text-danger">*</span></label
+							>
+							<input
+								id="educationLevel"
+								name="educationLevel"
+								class="form-control"
+								value={data.profile?.educationLevel ?? ""}
+								required
+							/>
+						</div>
+						<div class="row g-3 mb-4">
+							<div class="col-md-6">
+								<label for="degree" class="form-label fw-semibold"
+									>Degree <span class="text-danger">*</span></label
+								>
+								<input
+									id="degree"
+									name="degree"
+									class="form-control"
+									value={data.profile?.degree ?? ""}
+									required
+								/>
+							</div>
+							<div class="col-md-6">
+								<label for="jobTitle" class="form-label fw-semibold"
+									>Job Title <span class="text-danger">*</span></label
+								>
+								<input
+									id="jobTitle"
+									name="jobTitle"
+									class="form-control"
+									value={data.profile?.jobTitle ?? ""}
+									required
+								/>
+							</div>
+						</div>
+
+						<div class="mb-4">
 							<label for="studentEmail" class="form-label fw-semibold">
-								Student School Email <span class="text-danger">*</span>
+								Student School Email {#if !data.hasProfile}<span class="text-danger">*</span>{/if}
 							</label>
 							<div class="input-group">
 								<span class="input-group-text bg-white border-end-0">
@@ -95,7 +134,7 @@
 									id="studentEmail"
 									name="studentEmail"
 									placeholder="student@billericak12.com"
-									required
+									required={!data.hasProfile}
 								/>
 							</div>
 							<div class="form-text mt-2">

@@ -3,14 +3,20 @@ import { validateDefinition } from "@team4909/bionic-sign";
 import * as table from "$lib/server/db/schema";
 import { getOwnedFields } from "$lib/server/formWorkflow";
 import type { PageServerLoad } from "./$types";
+import { getProfileCompleteness } from "$lib/server/profileCompleteness";
 
 export const load: PageServerLoad = async ({ locals }) => {
+	const [profile] = await locals.db
+		.select()
+		.from(table.parentProfiles)
+		.where(eq(table.parentProfiles.userId, locals.user!.id));
+	const profileCompleteness = getProfileCompleteness("parent", profile ?? null);
 	const links = await locals.db
 		.select()
 		.from(table.parentStudentLinks)
 		.where(eq(table.parentStudentLinks.parentId, locals.user!.id));
 	const studentIds = links.map((link) => link.studentId);
-	if (studentIds.length === 0) return { tasks: [], linkedStudents: [] };
+	if (studentIds.length === 0) return { tasks: [], linkedStudents: [], profileCompleteness };
 	const rows = await locals.db
 		.select({
 			submission: table.eventFormSubmissions,
@@ -50,5 +56,5 @@ export const load: PageServerLoad = async ({ locals }) => {
 			studentName: `${student.firstName} ${student.lastName}`,
 			studentId: student.userid
 		}));
-	return { tasks, linkedStudents: studentIds };
+	return { tasks, linkedStudents: studentIds, profileCompleteness };
 };

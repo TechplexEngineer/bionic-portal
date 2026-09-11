@@ -4,6 +4,8 @@ import type { FormDefinition } from "@team4909/bionic-sign";
 import { eq, inArray } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { getAgeOnDate, getFormStatus } from "$lib/server/formWorkflow";
+import { getProfileCompleteness } from "$lib/server/profileCompleteness";
+import type { Role } from "$lib/roles";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
@@ -80,6 +82,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		return {
 			role,
+			profileCompleteness: getProfileCompleteness("parent", null),
 			student: null as typeof table.students.$inferSelect | null,
 			upcomingRegistrations: [] as {
 				id: string;
@@ -112,6 +115,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	// Student dashboard
+	const profile =
+		role === "mentor" || role === "admin"
+			? ((
+					await db
+						.select()
+						.from(table.mentorProfiles)
+						.where(eq(table.mentorProfiles.userId, user.id))
+				)[0] ?? null)
+			: ((
+					await db.select().from(table.students).where(eq(table.students.userid, user.username))
+				)[0] ?? null);
+	const profileCompleteness = getProfileCompleteness(role as Role, profile);
 	const [student] = await db
 		.select()
 		.from(table.students)
@@ -214,6 +229,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		role,
+		profileCompleteness,
 		student: student ?? null,
 		upcomingRegistrations,
 		actionItems,

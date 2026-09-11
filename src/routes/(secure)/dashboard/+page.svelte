@@ -125,14 +125,6 @@
 		{/if}
 	{:else}
 		<!-- ===== STUDENT DASHBOARD ===== -->
-		{#if !data.student}
-			<div class="alert alert-warning mt-3">
-				<strong>Profile Incomplete</strong> — Please
-				<a href="/register" class="alert-link">complete your student profile</a>
-				before registering for events.
-			</div>
-		{/if}
-
 		<div class="row g-4 mt-1">
 			<!-- Widget 1: Action Items -->
 			<div class="col-md-6">
@@ -142,6 +134,18 @@
 						<h5 class="mb-0 fw-bold">Action Items</h5>
 					</div>
 					<div class="card-body">
+						{#if data.profileCompleteness.incomplete}
+							<a
+								href={data.profileCompleteness.href}
+								class="alert alert-danger d-block text-decoration-none"
+							>
+								<i class="fa fa-user me-2"></i>
+								<strong>Complete your profile</strong>
+								<div class="small mt-1">
+									Missing: {data.profileCompleteness.missingFields.join(", ")}
+								</div>
+							</a>
+						{/if}
 						{#if data.actionItems.length === 0}
 							<div class="text-muted text-center py-3">
 								<i class="fa fa-check-circle fa-2x mb-2 text-success d-block"></i>

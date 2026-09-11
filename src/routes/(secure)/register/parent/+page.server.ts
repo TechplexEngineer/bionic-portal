@@ -50,21 +50,23 @@ export const actions: Actions = {
 		const formData = await event.request.formData();
 		const studentEmail = (formData.get("studentEmail") as string)?.toLowerCase().trim();
 		const phone = (formData.get("phone") as string)?.trim();
+		const educationLevel = (formData.get("educationLevel") as string)?.trim();
+		const degree = (formData.get("degree") as string)?.trim();
+		const jobTitle = (formData.get("jobTitle") as string)?.trim();
 
-		if (!studentEmail) {
-			return fail(400, { message: "Student email is required" });
+		if (!phone || !educationLevel || !degree || !jobTitle) {
+			return fail(400, { message: "Please complete all required parent profile fields." });
 		}
 
 		const db = event.locals.db;
 		const userId = event.locals.user.id;
 
 		// 1. Verify student exists
-		const [student] = await db
-			.select()
-			.from(table.students)
-			.where(eq(table.students.userid, studentEmail));
+		let student = studentEmail
+			? (await db.select().from(table.students).where(eq(table.students.userid, studentEmail)))[0]
+			: undefined;
 
-		if (!student) {
+		if (studentEmail && !student) {
 			return fail(400, {
 				message:
 					"No student found with that email address. Please make sure your student has registered first."
@@ -72,22 +74,22 @@ export const actions: Actions = {
 		}
 
 		try {
-			// 2. Save or update parent profile (phone)
-			if (phone) {
-				await db.insert(table.parentProfiles).values({ userId, phone }).onConflictDoUpdate({
+			// 2. Save or update the complete parent profile.
+			await db
+				.insert(table.parentProfiles)
+				.values({ userId, phone, educationLevel, degree, jobTitle })
+				.onConflictDoUpdate({
 					target: table.parentProfiles.userId,
-					set: { phone }
+					set: { phone, educationLevel, degree, jobTitle }
 				});
-			}
 
 			// 3. Create link
-			await db
-				.insert(table.parentStudentLinks)
-				.values({
-					parentId: userId,
-					studentId: studentEmail
-				})
-				.onConflictDoNothing();
+			if (student) {
+				await db
+					.insert(table.parentStudentLinks)
+					.values({ parentId: userId, studentId: student.userid })
+					.onConflictDoNothing();
+			}
 
 			// 4. Update user role to 'parent' if it's currently 'user'
 			if (event.locals.user.role === "user") {
@@ -96,7 +98,9 @@ export const actions: Actions = {
 
 			return {
 				success: true,
-				message: `Successfully connected to ${student.firstName} ${student.lastName}!`
+				message: student
+					? `Successfully connected to ${student.firstName} ${student.lastName}!`
+					: "Parent profile updated successfully!"
 			};
 		} catch (e) {
 			console.error("Failed to connect parent to student:", e);

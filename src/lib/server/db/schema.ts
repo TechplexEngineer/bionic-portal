@@ -414,7 +414,10 @@ export const parentProfiles = sqliteTable("parent_profiles", {
 	userId: text("user_id")
 		.primaryKey()
 		.references(() => user.id),
-	phone: text("phone")
+	phone: text("phone"),
+	educationLevel: text("education_level"),
+	degree: text("degree"),
+	jobTitle: text("job_title")
 });
 export type ParentProfile = typeof parentProfiles.$inferSelect;
 

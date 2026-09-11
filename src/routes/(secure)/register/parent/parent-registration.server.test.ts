@@ -24,7 +24,13 @@ function event(student: { userid: string; firstName: string; lastName: string } 
 		input: {
 			request: new Request("http://localhost/register/parent", {
 				method: "POST",
-				body: new URLSearchParams({ phone: "555-0100", studentEmail: " Student@School.edu " })
+				body: new URLSearchParams({
+					phone: "555-0100",
+					educationLevel: "College",
+					degree: "Engineering",
+					jobTitle: "Engineer",
+					studentEmail: " Student@School.edu "
+				})
 			}),
 			locals: { user: { id: "parent-1", username: "parent@example.com", role: "user" }, db }
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
