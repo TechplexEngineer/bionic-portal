@@ -64,8 +64,13 @@ export const actions: Actions = {
 		const customFields: Record<string, string> = {};
 		for (const [key, value] of formData.entries()) {
 			if (key.startsWith("custom_")) {
-				customFields[key.replace("custom_", "")] = value as string;
+				customFields[key.replace("custom_", "")] = value.toString();
 			}
+		}
+
+		const requiredQuestionKeys = ["aspirationsAfterHighSchool", "winterSpringSports", "teamGoals"];
+		if (requiredQuestionKeys.some((key) => !customFields[key]?.trim())) {
+			return fail(400, { message: "All additional questions are required" });
 		}
 
 		if (!firstName || !lastName) {

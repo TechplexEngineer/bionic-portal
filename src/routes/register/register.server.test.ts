@@ -33,7 +33,10 @@ const validFields = {
 	intoleranceLevel: "none",
 	currentGrade: "9",
 	gender: "Prefer not to say",
-	dateOfBirth: "2010-06-15"
+	dateOfBirth: "2010-06-15",
+	custom_aspirationsAfterHighSchool: "Attend college and study engineering",
+	custom_winterSpringSports: "Yes, I plan to play soccer",
+	custom_teamGoals: "Learn new skills and contribute to the team"
 };
 
 describe("student registration", () => {
@@ -92,6 +95,25 @@ describe("student registration", () => {
 			})
 		);
 	});
+
+	it.each(["custom_aspirationsAfterHighSchool", "custom_winterSpringSports", "custom_teamGoals"])(
+		"requires an answer to %s",
+		async (missingField) => {
+			const { input, values } = event({
+				...validFields,
+				custom_aspirationsAfterHighSchool: "Attend college and study engineering",
+				custom_winterSpringSports: "Yes, I plan to play soccer",
+				custom_teamGoals: "Learn new skills and contribute to the team",
+				[missingField]: ""
+			});
+
+			expect(await actions.default(input)).toMatchObject({
+				status: 400,
+				data: { message: "All additional questions are required" }
+			});
+			expect(values).not.toHaveBeenCalled();
+		}
+	);
 
 	it("keeps unrelated save failures generic", async () => {
 		const { input, onConflictDoUpdate } = event(validFields);

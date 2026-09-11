@@ -357,6 +357,7 @@
 									class="form-control"
 									rows="3"
 									placeholder="Enter your answer"
+									required
 								></textarea>
 							</div>
 						{/each}
