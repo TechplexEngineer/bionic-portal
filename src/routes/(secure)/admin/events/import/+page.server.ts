@@ -1,7 +1,8 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { fail } from "@sveltejs/kit";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 import * as XLSX from 'xlsx';
+import { parseDate, parseDateTime, parseBoolean } from "$lib/utils/import";
 
 export const load: PageServerLoad = async () => {
     return {};
@@ -30,9 +31,9 @@ export const actions: Actions = {
         }
 
         const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: "array" });
+        const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
         const sheetName = workbook.SheetNames[0];
-        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, any>[];
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, unknown>[];
 
         const db = locals.db;
         let importedCount = 0;
@@ -72,23 +73,3 @@ export const actions: Actions = {
         return { success: true, imported: importedCount };
     }
 };
-
-function parseDate(val: any): string {
-    if (!val) return "";
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().split('T')[0];
-}
-
-function parseDateTime(val: any): string {
-    if (!val) return "";
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().slice(0, 16); // format for datetime-local
-}
-
-function parseBoolean(val: any): boolean {
-    if (val === undefined || val === null) return false;
-    const s = val.toString().toLowerCase();
-    return s === "true" || s === "1" || s === "yes" || s === "on";
-}
