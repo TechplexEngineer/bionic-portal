@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { actions, load } from "./+page.server";
 
-function event(fields: Record<string, string>) {
+function event(fields: Record<string, string>, username = "new.student@billericak12.com") {
 	const onConflictDoUpdate = vi.fn();
 	const values = vi.fn().mockReturnValue({ onConflictDoUpdate });
 	const insert = vi.fn().mockReturnValue({ values });
@@ -13,7 +13,7 @@ function event(fields: Record<string, string>) {
 				body: new URLSearchParams(fields)
 			}),
 			locals: {
-				user: { username: "new.student@example.com" },
+				user: { username },
 				db: { insert }
 			}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
@@ -46,6 +46,16 @@ describe("student registration", () => {
 			status: 400,
 			data: { message: "Date of birth is required" }
 		});
+	});
+
+	it("requires students to register with a billericak12.com email", async () => {
+		const { input, values } = event(validFields, "new.student@example.com");
+
+		expect(await actions.default(input)).toMatchObject({
+			status: 400,
+			data: { message: "Student registration requires a @billericak12.com email address" }
+		});
+		expect(values).not.toHaveBeenCalled();
 	});
 
 	it("preserves the registration URL when redirecting an unauthenticated user to login", async () => {

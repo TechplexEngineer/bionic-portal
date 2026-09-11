@@ -32,6 +32,12 @@ export const actions: Actions = {
 			return fail(401, { message: "Unauthorized" });
 		}
 
+		if (!event.locals.user.username.toLowerCase().endsWith("@billericak12.com")) {
+			return fail(400, {
+				message: "Student registration requires a @billericak12.com email address"
+			});
+		}
+
 		const formData = await event.request.formData();
 		const firstName = formData.get("firstName") as string;
 		const lastName = formData.get("lastName") as string;
