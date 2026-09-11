@@ -49,6 +49,10 @@
 					<input type="hidden" name="next" value={data.next} />
 					<div class="mb-3">
 						<label for="email" class="form-label">Email address</label>
+						<div class="alert alert-warning py-2" role="note">
+							Double-check your email address. If it does not match an existing account, we will
+							create a new account using it.
+						</div>
 						<input
 							id="email"
 							name="email"
