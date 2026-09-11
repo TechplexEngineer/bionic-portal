@@ -189,7 +189,7 @@
 									></span>
 									Connecting...
 								{:else}
-									Connect to Student
+									Connect to Students
 								{/if}
 							</button>
 						</div>
@@ -215,6 +215,30 @@
 						<a href={resolve("/dashboard")} class="btn btn-outline-primary w-100">
 							<i class="fa fa-tachometer me-1"></i> Go to Dashboard
 						</a>
+					</div>
+				</div>
+			{/if}
+
+			{#if data.pendingStudentLinks && data.pendingStudentLinks.length > 0}
+				<div class="mt-5">
+					<h4 class="fw-bold mb-3">Pending Students</h4>
+					<p class="text-body-secondary">
+						These addresses will be linked automatically when the student registers. If you made a
+						typo, remove it and add the correct address above.
+					</p>
+					<div class="list-group shadow-sm">
+						{#each data.pendingStudentLinks as pending (pending.studentEmail)}
+							<form
+								method="POST"
+								action="?/removePendingStudent"
+								use:enhance
+								class="list-group-item d-flex justify-content-between align-items-center py-3"
+							>
+								<span>{pending.studentEmail}</span>
+								<input type="hidden" name="studentEmail" value={pending.studentEmail} />
+								<button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+							</form>
+						{/each}
 					</div>
 				</div>
 			{/if}

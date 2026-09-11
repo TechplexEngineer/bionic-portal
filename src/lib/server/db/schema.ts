@@ -408,6 +408,20 @@ export const parentStudentLinksRelations = relations(parentStudentLinks, ({ one 
 }));
 
 // ----------------------------------------------------------------------------
+// Pending Parent Student Links Table
+// ----------------------------------------------------------------------------
+export const pendingParentStudentLinks = sqliteTable(
+	"pending_parent_student_links",
+	{
+		parentId: text("parent_id")
+			.notNull()
+			.references(() => user.id),
+		studentEmail: text("student_email").notNull()
+	},
+	(table) => [unique("pending_parent_student_unique").on(table.parentId, table.studentEmail)]
+);
+
+// ----------------------------------------------------------------------------
 // Parent Profiles Table
 // ----------------------------------------------------------------------------
 export const parentProfiles = sqliteTable("parent_profiles", {

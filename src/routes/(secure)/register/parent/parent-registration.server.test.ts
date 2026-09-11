@@ -24,6 +24,7 @@ function event(
 	const db = {
 		select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where }) }),
 		insert,
+		delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
 		update: vi.fn().mockReturnValue({ set })
 	};
 	const body = new URLSearchParams({
@@ -67,17 +68,11 @@ describe("parent registration", () => {
 		expect(set).toHaveBeenCalledWith({ role: "parent" });
 	});
 
-	it("does not create a link when the student email is not registered", async () => {
+	it("saves an unregistered student email as a pending link", async () => {
 		const { input, insert } = event([]);
 
-		expect(await actions.default(input)).toMatchObject({
-			status: 400,
-			data: {
-				message:
-					"No student found with that email address: student@school.edu. Please make sure your student has registered first."
-			}
-		});
-		expect(insert).not.toHaveBeenCalled();
+		await expect(actions.default(input)).rejects.toMatchObject({ status: 303 });
+		expect(insert).toHaveBeenCalledTimes(2);
 	});
 
 	it("links multiple students in one submission", async () => {
@@ -93,13 +88,42 @@ describe("parent registration", () => {
 		expect(insert).toHaveBeenCalledTimes(3);
 	});
 
-	it("does not save anything when one submitted student is missing", async () => {
+	it("saves pending links when submitted students are not registered yet", async () => {
 		const { input, insert } = event(
 			[{ userid: "first@school.edu", firstName: "Alex", lastName: "Student" }],
 			["first@school.edu", "missing@school.edu"]
 		);
 
-		expect(await actions.default(input)).toMatchObject({ status: 400 });
+		await expect(actions.default(input)).rejects.toMatchObject({ status: 303 });
+		expect(insert).toHaveBeenCalledTimes(3);
+	});
+
+	it("rejects malformed student emails before saving the parent profile", async () => {
+		const { input, insert } = event([], ["not-an-email"]);
+
+		expect(await actions.default(input)).toMatchObject({
+			status: 400,
+			data: { message: "Enter a valid student email address." }
+		});
 		expect(insert).not.toHaveBeenCalled();
+	});
+
+	it("saves a valid unregistered student email as pending", async () => {
+		const { input, insert } = event([], ["future@school.edu"]);
+
+		await expect(actions.default(input)).rejects.toMatchObject({ status: 303 });
+		expect(insert).toHaveBeenCalledTimes(2);
+	});
+
+	it("removes a pending student email for the signed-in parent", async () => {
+		const { input } = event([], ["future@school.edu"]);
+		input.request = new Request("http://localhost/register/parent", {
+			method: "POST",
+			body: new URLSearchParams({ studentEmail: "Future@School.edu" })
+		});
+
+		const removeAction = actions.removePendingStudent;
+		expect(removeAction).toBeDefined();
+		expect(await removeAction!(input)).toEqual({ success: true });
 	});
 });
