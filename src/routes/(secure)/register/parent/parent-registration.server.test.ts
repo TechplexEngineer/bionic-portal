@@ -22,6 +22,7 @@ function event(student: { userid: string; firstName: string; lastName: string } 
 
 	return {
 		input: {
+			url: new URL("http://localhost/register/parent"),
 			request: new Request("http://localhost/register/parent", {
 				method: "POST",
 				body: new URLSearchParams({
@@ -47,9 +48,9 @@ describe("parent registration", () => {
 			lastName: "Student"
 		});
 
-		expect(await actions.default(input)).toEqual({
-			success: true,
-			message: "Successfully connected to Alex Student!"
+		await expect(actions.default(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/dashboard/parent"
 		});
 		expect(insert).toHaveBeenCalledTimes(2);
 		expect(insert.mock.calls[1]).toBeDefined();

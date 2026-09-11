@@ -26,7 +26,7 @@
 					</p>
 
 					{#if form?.message}
-						<div class="alert {form.success ? 'alert-success' : 'alert-danger'} mb-4" role="alert">
+						<div class="alert alert-danger mb-4" role="alert">
 							{form.message}
 						</div>
 					{/if}

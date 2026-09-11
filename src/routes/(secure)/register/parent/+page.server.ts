@@ -2,6 +2,7 @@ import { fail, redirect } from "@sveltejs/kit";
 import { eq, and } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
+import { getSafeReturnTo } from "$lib/server/returnTo";
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -95,16 +96,11 @@ export const actions: Actions = {
 			if (event.locals.user.role === "user") {
 				await db.update(table.user).set({ role: "parent" }).where(eq(table.user.id, userId));
 			}
-
-			return {
-				success: true,
-				message: student
-					? `Successfully connected to ${student.firstName} ${student.lastName}!`
-					: "Parent profile updated successfully!"
-			};
 		} catch (e) {
 			console.error("Failed to connect parent to student:", e);
 			return fail(500, { message: "An error occurred while connecting to the student." });
 		}
+
+		throw redirect(303, getSafeReturnTo(event.url, "/dashboard/parent"));
 	}
 };

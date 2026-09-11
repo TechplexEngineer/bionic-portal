@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { getLoginUrl } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
+import { getSafeReturnTo } from "$lib/server/returnTo";
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -156,8 +157,6 @@ export const actions: Actions = {
 						customFields: JSON.stringify(customFields)
 					}
 				});
-
-			return { success: true, message: "Profile updated successfully!" };
 		} catch (e) {
 			console.error("Failed to update profile:", e);
 			if (
@@ -171,5 +170,7 @@ export const actions: Actions = {
 			}
 			return fail(500, { message: "An error occurred while saving your profile." });
 		}
+
+		throw redirect(303, getSafeReturnTo(event.url));
 	}
 };

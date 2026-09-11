@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { getLoginUrl } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
+import { getSafeReturnTo } from "$lib/server/returnTo";
 
 const shirtSizes = ["YS", "YM", "YL", "YXL", "S", "M", "L", "XL", "2XL", "3XL"];
 const firstAlumniOptions = ["yes", "no"];
@@ -74,11 +75,11 @@ export const actions: Actions = {
 					.set({ role: "mentor" })
 					.where(eq(table.user.id, event.locals.user.id));
 			}
-
-			return { success: true, message: "Mentor profile saved successfully!" };
 		} catch (error) {
 			console.error("Failed to save mentor profile:", error);
 			return fail(500, { message: "An error occurred while saving your mentor profile." });
 		}
+
+		throw redirect(303, getSafeReturnTo(event.url));
 	}
 };

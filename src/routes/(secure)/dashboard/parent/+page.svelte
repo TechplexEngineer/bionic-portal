@@ -19,7 +19,7 @@
 		<div class="card-body">
 			{#if data.profileCompleteness.incomplete}
 				<a
-					href={data.profileCompleteness.href}
+					href={`${data.profileCompleteness.href}?returnTo=${encodeURIComponent("/dashboard/parent")}`}
 					class="alert alert-danger d-block text-decoration-none"
 				>
 					<i class="fa fa-user me-2"></i>

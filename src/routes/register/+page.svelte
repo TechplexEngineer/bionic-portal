@@ -379,7 +379,7 @@
 					</div>
 
 					{#if form?.message}
-						<div class="alert alert-{form.success ? 'success' : 'danger'} mb-3">
+						<div class="alert alert-danger mb-3">
 							{form.message}
 						</div>
 					{/if}

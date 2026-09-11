@@ -8,6 +8,7 @@ function event(fields: Record<string, string>) {
 
 	return {
 		input: {
+			url: new URL("http://localhost/register"),
 			request: new Request("http://localhost/register", {
 				method: "POST",
 				body: new URLSearchParams(fields)
@@ -83,7 +84,10 @@ describe("student registration", () => {
 			custom_teamGoals: "Learn new skills and contribute to the team"
 		});
 
-		await actions.default(input);
+		await expect(actions.default(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/dashboard"
+		});
 
 		expect(values).toHaveBeenCalledWith(
 			expect.objectContaining({

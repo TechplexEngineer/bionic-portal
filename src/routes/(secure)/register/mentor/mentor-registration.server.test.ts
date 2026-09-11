@@ -24,6 +24,7 @@ function event(fields: Record<string, string> = validFields) {
 
 	return {
 		input: {
+			url: new URL("http://localhost/register/mentor"),
 			request: new Request("http://localhost/register/mentor", {
 				method: "POST",
 				body: new URLSearchParams(fields)
@@ -51,9 +52,9 @@ describe("mentor registration", () => {
 	it("saves registration details and promotes a new user to mentor", async () => {
 		const { input, values, set } = event();
 
-		expect(await actions.default(input)).toEqual({
-			success: true,
-			message: "Mentor profile saved successfully!"
+		await expect(actions.default(input)).rejects.toMatchObject({
+			status: 303,
+			location: "/dashboard"
 		});
 		expect(values).toHaveBeenCalledWith({
 			userId: "user-1",
