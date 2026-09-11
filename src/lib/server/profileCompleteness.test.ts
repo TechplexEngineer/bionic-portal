@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getProfileCompleteness } from "./profileCompleteness";
+import { hasPendingActionItems } from "$lib/profileActions";
 
 describe("getProfileCompleteness", () => {
 	it("requires the requested parent profile fields", () => {
@@ -54,5 +55,9 @@ describe("getProfileCompleteness", () => {
 		} as never);
 
 		expect(result).toEqual({ incomplete: false, missingFields: [], href: "/register" });
+	});
+
+	it("keeps the action-items card open when only the profile task is pending", () => {
+		expect(hasPendingActionItems(true, 0)).toBe(true);
 	});
 });

@@ -5,3 +5,4 @@
 - When a UI link is requested to match an existing button and share its row, reuse the same Bootstrap button classes and place it in the existing layout row rather than adding a separate text-only block.
 - When sibling landing-page options have unequal content, use equal-width Bootstrap cards with consistent internal structure to preserve visual symmetry.
 - When a user corrects a form requirement after implementation, enforce it in both the browser markup and the server action, and add a regression test for bypassing client-side validation.
+- When a UI card gains a new task source, include that source in the empty-state predicate so “caught up” is shown only when every task source is complete.

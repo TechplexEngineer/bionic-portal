@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DashHeader, { type Page } from "$lib/components/DashHeader.svelte";
+	import { hasPendingActionItems } from "$lib/profileActions";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -146,7 +147,7 @@
 								</div>
 							</a>
 						{/if}
-						{#if data.actionItems.length === 0}
+						{#if !hasPendingActionItems(data.profileCompleteness.incomplete, data.actionItems.length)}
 							<div class="text-muted text-center py-3">
 								<i class="fa fa-check-circle fa-2x mb-2 text-success d-block"></i>
 								You're all caught up! No pending tasks.

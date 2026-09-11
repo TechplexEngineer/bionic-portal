@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from "./$types";
+	import { hasPendingActionItems } from "$lib/profileActions";
 	let { data }: PageProps = $props();
 </script>
 
@@ -26,7 +27,7 @@
 					<div class="small mt-1">Missing: {data.profileCompleteness.missingFields.join(", ")}</div>
 				</a>
 			{/if}
-			{#if data.tasks.length === 0}
+			{#if !hasPendingActionItems(data.profileCompleteness.incomplete, data.tasks.length)}
 				<div class="alert alert-success mb-0">You have no pending parent signatures.</div>
 			{:else}
 				<h3 class="h5">Signatures needed</h3>
