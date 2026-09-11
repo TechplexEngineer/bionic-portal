@@ -6,6 +6,17 @@
 	let { data, form }: PageProps = $props();
 
 	let loading = $state(false);
+	let studentEmails = $state([""]);
+
+	function addStudentRow() {
+		studentEmails.push("");
+	}
+
+	function removeStudentRow(index: number) {
+		if (studentEmails.length > 1) {
+			studentEmails.splice(index, 1);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -20,9 +31,8 @@
 					<h1 class="h2 card-title fw-bold mb-2">Parent Registration</h1>
 					<p class="text-body-secondary mb-4">Signed in as {data.user.username}</p>
 					<p class="text-secondary mb-4">
-						Enter your student's school email address to link their account to yours. Once
-						connected, you can manage registrations and view attendance. You can connect multiple
-						students by submitting this form more than once.
+						Enter your students' school email addresses to link their accounts to yours. Once
+						connected, you can manage registrations and view attendance.
 					</p>
 
 					{#if form?.message}
@@ -121,25 +131,51 @@
 						</div>
 
 						<div class="mb-4">
-							<label for="studentEmail" class="form-label fw-semibold">
-								Student School Email {#if !data.hasProfile}<span class="text-danger">*</span>{/if}
-							</label>
-							<div class="input-group">
-								<span class="input-group-text bg-white border-end-0">
-									<i class="fa fa-envelope text-muted"></i>
-								</span>
-								<input
-									type="email"
-									class="form-control border-start-0 ps-0"
-									id="studentEmail"
-									name="studentEmail"
-									placeholder="student@billericak12.com"
-									required={!data.hasProfile}
-								/>
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<label class="form-label fw-semibold mb-0" for="studentEmail-0">
+									Student School Emails {#if !data.hasProfile}<span class="text-danger">*</span
+										>{/if}
+								</label>
+								<button
+									type="button"
+									class="btn btn-outline-primary btn-sm"
+									onclick={addStudentRow}
+								>
+									<i class="fa fa-plus me-1" aria-hidden="true"></i>
+									Add another student
+								</button>
 							</div>
+							{#each studentEmails as email, index (index)}
+								<div class="input-group mb-2">
+									<span class="input-group-text bg-white border-end-0">
+										<i class="fa fa-envelope text-muted" aria-hidden="true"></i>
+									</span>
+									<input
+										type="email"
+										class="form-control border-start-0 ps-0"
+										id={`studentEmail-${index}`}
+										name="studentEmail"
+										aria-label={`Student ${index + 1} school email`}
+										placeholder="student@billericak12.com"
+										value={email}
+										oninput={(event) => (studentEmails[index] = event.currentTarget.value)}
+										required={!data.hasProfile || index > 0}
+									/>
+									{#if studentEmails.length > 1}
+										<button
+											type="button"
+											class="btn btn-outline-secondary"
+											aria-label={`Remove student ${index + 1}`}
+											onclick={() => removeStudentRow(index)}
+										>
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</button>
+									{/if}
+								</div>
+							{/each}
 							<div class="form-text mt-2">
-								Your student must have already completed their student registration with this email.
-								Homeschool students can use the personal email on their student profile.
+								Your students must have already completed their student registration with these
+								emails. Homeschool students can use the personal email on their student profile.
 							</div>
 						</div>
 
