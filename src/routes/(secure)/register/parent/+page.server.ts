@@ -4,6 +4,12 @@ import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 import { getSafeReturnTo } from "$lib/server/returnTo";
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: string) {
+	return email.length <= 254 && emailPattern.test(email);
+}
+
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
 		return redirect(302, "/login");
@@ -33,12 +39,17 @@ export const load: PageServerLoad = async (event) => {
 			return student ?? { userid: link.studentId, firstName: "", lastName: "" };
 		})
 	);
+	const pendingStudentLinks = await db
+		.select()
+		.from(table.pendingParentStudentLinks)
+		.where(eq(table.pendingParentStudentLinks.parentId, userId));
 
 	return {
 		user: event.locals.user,
 		profile: profile ?? null,
 		hasProfile: !!profile,
-		linkedStudents
+		linkedStudents,
+		pendingStudentLinks
 	};
 };
 
@@ -58,6 +69,10 @@ export const actions: Actions = {
 		const degree = (formData.get("degree") as string)?.trim();
 		const jobTitle = (formData.get("jobTitle") as string)?.trim();
 
+		if (studentEmails.some((email) => !isValidEmail(email))) {
+			return fail(400, { message: "Enter a valid student email address." });
+		}
+
 		if (!phone || !educationLevel || !degree || !jobTitle) {
 			return fail(400, { message: "Please complete all required parent profile fields." });
 		}
@@ -65,7 +80,7 @@ export const actions: Actions = {
 		const db = event.locals.db;
 		const userId = event.locals.user.id;
 
-		// 1. Verify every submitted student exists before changing the parent's profile.
+		// 1. Find every submitted student before changing the parent's profile.
 		const students = await Promise.all(
 			[...new Set(studentEmails)].map(async (studentEmail) => {
 				const [student] = await db
@@ -75,13 +90,6 @@ export const actions: Actions = {
 				return { email: studentEmail, student };
 			})
 		);
-
-		const missingStudent = students.find(({ student }) => !student);
-		if (missingStudent) {
-			return fail(400, {
-				message: `No student found with that email address: ${missingStudent.email}. Please make sure your student has registered first.`
-			});
-		}
 
 		try {
 			// 2. Save or update the complete parent profile.
@@ -93,12 +101,17 @@ export const actions: Actions = {
 					set: { phone, educationLevel, degree, jobTitle }
 				});
 
-			// 3. Create links for all submitted students.
-			for (const { student } of students) {
+			// 3. Link registered students and save the rest for automatic linking later.
+			for (const { email, student } of students) {
 				if (student) {
 					await db
 						.insert(table.parentStudentLinks)
 						.values({ parentId: userId, studentId: student.userid })
+						.onConflictDoNothing();
+				} else {
+					await db
+						.insert(table.pendingParentStudentLinks)
+						.values({ parentId: userId, studentEmail: email })
 						.onConflictDoNothing();
 				}
 			}
@@ -113,5 +126,25 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, getSafeReturnTo(event.url, "/dashboard/parent"));
+	},
+	removePendingStudent: async (event) => {
+		if (!event.locals.user) return fail(401, { message: "Unauthorized" });
+
+		const formData = await event.request.formData();
+		const rawEmail = formData.get("studentEmail");
+		const studentEmail = typeof rawEmail === "string" ? rawEmail.toLowerCase().trim() : "";
+		if (!isValidEmail(studentEmail)) {
+			return fail(400, { message: "Enter a valid student email address." });
+		}
+
+		await event.locals.db
+			.delete(table.pendingParentStudentLinks)
+			.where(
+				and(
+					eq(table.pendingParentStudentLinks.parentId, event.locals.user.id),
+					eq(table.pendingParentStudentLinks.studentEmail, studentEmail)
+				)
+			);
+		return { success: true };
 	}
 };

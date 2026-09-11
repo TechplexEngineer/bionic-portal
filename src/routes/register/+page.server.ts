@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import * as table from "$lib/server/db/schema";
 import { getLoginUrl } from "$lib/server/authRedirect";
 import type { Actions, PageServerLoad } from "./$types";
@@ -157,6 +157,25 @@ export const actions: Actions = {
 						customFields: JSON.stringify(customFields)
 					}
 				});
+
+			const pendingLinks = await db
+				.select()
+				.from(table.pendingParentStudentLinks)
+				.where(eq(table.pendingParentStudentLinks.studentEmail, email));
+			for (const pendingLink of pendingLinks) {
+				await db
+					.insert(table.parentStudentLinks)
+					.values({ parentId: pendingLink.parentId, studentId: email })
+					.onConflictDoNothing();
+				await db
+					.delete(table.pendingParentStudentLinks)
+					.where(
+						and(
+							eq(table.pendingParentStudentLinks.parentId, pendingLink.parentId),
+							eq(table.pendingParentStudentLinks.studentEmail, email)
+						)
+					);
+			}
 		} catch (e) {
 			console.error("Failed to update profile:", e);
 			if (

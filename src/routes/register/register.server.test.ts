@@ -4,7 +4,13 @@ import { actions, load } from "./+page.server";
 function event(fields: Record<string, string>) {
 	const onConflictDoUpdate = vi.fn();
 	const values = vi.fn().mockReturnValue({ onConflictDoUpdate });
-	const insert = vi.fn().mockReturnValue({ values });
+	const linkValues = vi.fn().mockReturnValue({ onConflictDoNothing: vi.fn() });
+	const insert = vi.fn().mockReturnValueOnce({ values }).mockReturnValue({ values: linkValues });
+	const pendingLinks = [{ parentId: "parent-1", studentEmail: "new.student@example.com" }];
+	const deleteWhere = vi.fn().mockResolvedValue(undefined);
+	const select = vi.fn().mockReturnValue({
+		from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(pendingLinks) })
+	});
 
 	return {
 		input: {
@@ -15,11 +21,13 @@ function event(fields: Record<string, string>) {
 			}),
 			locals: {
 				user: { username: "new.student@example.com" },
-				db: { insert }
+				db: { insert, select, delete: vi.fn().mockReturnValue({ where: deleteWhere }) }
 			}
 		} as unknown as Parameters<NonNullable<typeof actions.default>>[0],
+		insert,
 		values,
-		onConflictDoUpdate
+		onConflictDoUpdate,
+		deleteWhere
 	};
 }
 
@@ -127,5 +135,13 @@ describe("student registration", () => {
 			status: 500,
 			data: { message: "An error occurred while saving your profile." }
 		});
+	});
+
+	it("links pending parents when the student completes registration", async () => {
+		const { input, insert, deleteWhere } = event(validFields);
+
+		await expect(actions.default(input)).rejects.toMatchObject({ status: 303 });
+		expect(insert).toHaveBeenCalledTimes(2);
+		expect(deleteWhere).toHaveBeenCalled();
 	});
 });
