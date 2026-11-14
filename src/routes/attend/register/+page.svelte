@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageProps } from './$types';
+	import { enhance } from "$app/forms";
+	import type { PageProps } from "./$types";
 
 	let { data, form }: PageProps = $props();
 </script>
@@ -34,6 +34,9 @@
 		{#if form?.error}
 			<div class="alert alert-danger mb-3">{form.error}</div>
 		{/if}
-		<button type="submit" class="btn btn-primary">Register</button>
+		<div class="d-flex gap-2">
+			<a href="/attend" class="btn btn-secondary">Cancel</a>
+			<button type="submit" class="btn btn-primary">Register</button>
+		</div>
 	</form>
 </div>
